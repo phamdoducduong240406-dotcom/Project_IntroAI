@@ -8,9 +8,8 @@ Dưới đây là danh sách 3 thành viên của nhóm:
 
 | STT | Họ và Tên | Mã sinh viên |
 | :---: | :--- | :---: |
-| 1 | **Nguyễn Quý Trung** | `202416756` |
-| 2 | **Phạm Văn Sâm** | `202400114` |
-| 3 | **Nguyễn Công Vinh** | `202400083` |
+| 1 | **Phạm Đỗ Đức Dương** | `202416466` |
+| 2 | **Cao Thanh Hùng** | `202416502` |
 
 
 
