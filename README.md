@@ -12,8 +12,8 @@
 
 | STT | Họ và Tên | Mã sinh viên | Vai trò & Phân công nhiệm vụ | Đóng góp |
 | :---: | :--- | :---: | :--- | :---: |
-| 1 | **Phạm Đỗ Đức Dương** | `202416466` | - Cài đặt môi trường AZ Tank Game bằng Box2D.<br>- Xây dựng hệ thống Bot đối thủ đa cấp độ (Rule-based).<br>- Viết báo cáo phần kiến trúc hệ thống và thuật toán. | `50%` |
-| 2 | **Cao Thanh Hùng** | `202416502` | - Tích hợp môi trường Gymnasium và thiết kế hàm phần thưởng.<br>- Cài đặt và huấn luyện mô hình PPO (Curriculum Learning).<br>- Chạy thực nghiệm, đánh giá kết quả và thiết kế slide. | `50%` |
+| 1 | **Cao Thanh Hùng** | `202416502` | - Cài đặt môi trường AZ Tank Game bằng Box2D.<br>- Xây dựng hệ thống Bot đối thủ đa cấp độ (Rule-based).<br>- Viết báo cáo phần kiến trúc hệ thống và thuật toán. | `50%` |
+| 2 | **Phạm Đỗ Đức Dương** | `202416466` | - Tích hợp môi trường Gymnasium và thiết kế hàm phần thưởng.<br>- Cài đặt và huấn luyện mô hình PPO (Curriculum Learning).<br>- Chạy thực nghiệm, đánh giá kết quả và thiết kế slide. | `50%` |
 
 > 💡 **Thông điệp của nhóm:** *"Chúng mình hy vọng qua dự án này không chỉ nắm vững các khái niệm cơ bản của Trí tuệ Nhân tạo, mà còn ứng dụng thành công các thuật toán vào việc giải quyết bài toán thực tế. Cảm ơn cô và các bạn đã dành thời gian theo dõi dự án của nhóm!"*
 
