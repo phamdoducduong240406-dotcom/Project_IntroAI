@@ -78,10 +78,22 @@ Game được thiết kế theo mô hình **Logic - Renderer Decoupling**, cho p
 
 ## ⚙️ Hướng dẫn Cài đặt & Biên dịch
 
-### Yêu cầu hệ thống
-* **CMake**: Phiên bản `≥ 3.15`
-* **Trình biên dịch**: Hỗ trợ chuẩn C++17 (MSVC, GCC/MinGW, hoặc Clang).
-* **Raylib**: Cài đặt thư viện Raylib trên hệ thống (Box2D và pybind11 sẽ được CMake tự động tải về từ GitHub khi cấu hình):
+### 📦 Các thư viện & gói phần mềm sử dụng
+#### C++ / Đồ họa:
+* **CMake** (`≥ 3.15`)
+* **Trình biên dịch**: Chuẩn C++17 (MSVC, GCC/MinGW, hoặc Clang).
+* **Raylib**: Thư viện đồ họa và UI.
+* **Box2D** (`v2.4.1`): Được CMake tự động tải về từ GitHub.
+* **pybind11** (`v2.12.0`): Được CMake tự động tải về từ GitHub.
+
+#### Python (Cho huấn luyện/chạy AI):
+* **Python** (`≥ 3.8`)
+* **stable-baselines3**: Thuật toán RL (PPO).
+* **gymnasium**: Môi trường giả lập.
+* **numpy**, **torch** (PyTorch), **tensorboard**.
+
+### 🛠️ Cài đặt thư viện phụ thuộc
+* **Cài đặt Raylib (C++):**
   * **Trên Windows (MSYS2 / MinGW-w64):**
     ```bash
     pacman -S mingw-w64-x86_64-raylib
@@ -90,8 +102,15 @@ Game được thiết kế theo mô hình **Logic - Renderer Decoupling**, cho p
     ```bash
     sudo apt install libraylib-dev
     ```
+* **Cài đặt thư viện Python:**
+  ```bash
+  pip install stable-baselines3 gymnasium numpy torch tensorboard
+  ```
 
-### Biên dịch trên Windows (MSYS2 / MinGW-w64)
+### 🔨 Biên dịch phần C++
+*Để chạy được phần đồ họa hoặc huấn luyện AI bằng Python, trước hết bạn cần biên dịch lõi C++.*
+
+#### Biên dịch trên Windows (MSYS2 / MinGW-w64)
 ```bash
 # 1. Tạo thư mục build
 mkdir build && cd build
@@ -100,17 +119,17 @@ mkdir build && cd build
 cmake -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release ..
 mingw32-make -j4
 
-# 3. Chạy game
+# 3. Chạy game đồ họa
 ./AZgame.exe
 ```
 
-### Biên dịch trên Linux (Ubuntu/Debian)
+#### Biên dịch trên Linux (Ubuntu/Debian)
 ```bash
 mkdir build && cd build
 cmake .. -DCMAKE_BUILD_TYPE=Release
 make -j4
 
-# Chạy game
+# Chạy game đồ họa
 ./AZgame
 ```
 
@@ -131,6 +150,30 @@ make -j4
 ## 📈 Hệ thống Học tăng cường (Reinforcement Learning - RL)
 
 Dự án này tích hợp một môi trường huấn luyện xe tăng tự động chất lượng cao dựa trên phương pháp **Học tăng cường**. Bằng cách bọc game engine viết bằng C++ qua thư viện **Pybind11**, Agent Python có thể tương tác trực tiếp với môi trường vật lý với hiệu suất cực cao (>1000 FPS ở chế độ headless).
+
+*Lưu ý: Đảm bảo bạn đã hoàn thành việc biên dịch lõi C++ ở trên. Việc biên dịch thành công sẽ sinh ra module thư viện liên kết động (`azgame_env.pyd` trên Windows hoặc `azgame_env.so` trên Linux) trong thư mục `build`, hỗ trợ Python import trực tiếp.*
+
+### 🏃 Hướng dẫn chạy và huấn luyện AI
+
+1. **Huấn luyện tự động theo lộ trình (Curriculum Pipeline):**
+   ```bash
+   python train_ai.py --pipeline
+   ```
+2. **Tiếp tục huấn luyện từ một Phase cụ thể (Resume):**
+   ```bash
+   python train_ai.py --pipeline --phase 9 --resume
+   ```
+3. **Chạy thử nghiệm xem AI thi đấu (Có đồ họa):**
+   ```bash
+   python train_ai.py --test 9
+   ```
+4. **Theo dõi quá trình huấn luyện bằng TensorBoard:**
+   ```bash
+   tensorboard --logdir ./logs/ --host 127.0.0.1
+   ```
+   Sau đó, mở trình duyệt và truy cập: [http://127.0.0.1:6006](http://127.0.0.1:6006)
+
+---
 
 Chi tiết thiết kế thuật toán cốt lõi, không gian quan sát (52 chiều), không gian hành động, thiết kế phần thưởng, chiến lược huấn luyện tăng tiến (Curriculum Learning) và hướng dẫn chạy huấn luyện vui lòng tham khảo tại:
 👉 **[Hướng dẫn & Thiết kế Huấn luyện AI (Reinforcement Learning)](file:///c:/Users/Admin/Desktop/PRJ_AI_N26/reinforcement%20learning/README.md)**
