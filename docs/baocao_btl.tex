@@ -1,0 +1,1445 @@
+  % ============================================================================
+  %  BÁO CÁO BÀI TẬP LỚN
+  %  Đề tài: Huấn luyện AI xe tăng đối kháng bằng Reinforcement Learning (PPO)
+  %  Môn học: IT3160 - Giới thiệu Trí tuệ nhân tạo
+  % ============================================================================
+  \documentclass[a4paper, 12pt]{report}
+  \usepackage{graphicx}
+  % --- Encoding & Ngôn ngữ ---
+  \usepackage[utf8]{inputenc}
+  \usepackage[vietnamese]{babel}
+
+  % --- Toán ---
+  \usepackage{amsmath, amssymb, amsfonts}
+
+  % --- Hình ảnh & Bảng ---
+  \usepackage{graphicx}
+  \usepackage{booktabs}
+  \usepackage{tabularx}
+  \usepackage{array}
+  \usepackage{longtable}
+  \usepackage{multirow}
+  \usepackage{float}
+  \usepackage{adjustbox}
+
+  % --- TikZ (vẽ sơ đồ) ---
+  \usepackage{tikz}
+  \usetikzlibrary{arrows.meta, positioning, shapes.geometric, calc, fit, backgrounds}
+  \usepackage{pgfplots}
+  \usepackage{pgfplotstable}
+  \pgfplotsset{compat=1.18}
+  \usetikzlibrary{fillbetween}
+  \usepgfplotslibrary{fillbetween}
+
+
+  % --- Code listing ---
+  \usepackage{listings}
+  \lstset{
+    basicstyle=\ttfamily\small,
+    keywordstyle=\bfseries\color[RGB]{0,83,156},
+    commentstyle=\itshape\color{gray},
+    stringstyle=\color[RGB]{34,139,34},
+    breaklines=true,
+    frame=single,
+    rulecolor=\color[RGB]{200,200,210},
+    backgroundcolor=\color[RGB]{248,248,252},
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    xleftmargin=2em,
+    framexleftmargin=1.5em,
+    tabsize=4,
+    showstringspaces=false,
+  }
+
+  % --- Algorithm and Pseudocode ---
+  \usepackage{algorithm}
+  \usepackage{algpseudocode}
+
+  % --- Layout trang ---
+  \usepackage[top=2.5cm, bottom=2.5cm, left=3cm, right=2cm]{geometry}
+  \usepackage{setspace}
+  \onehalfspacing
+
+  % --- Hyperlink ---
+  \usepackage{hyperref}
+  \hypersetup{
+    colorlinks=true,
+    linkcolor=[RGB]{0,83,156},
+    citecolor=[RGB]{0,83,156},
+    urlcolor=[RGB]{0,83,156},
+  }
+
+  % --- Caption ---
+  \usepackage[font=small, labelfont=bf]{caption}
+
+  % --- Header / Footer ---
+  \usepackage{fancyhdr}
+  \pagestyle{fancy}
+  \fancyhf{}
+  \fancyhead[L]{\small\leftmark}
+  \fancyhead[R]{\small IT3160 -- Bài tập lớn}
+  \fancyfoot[C]{\thepage}
+  \renewcommand{\headrulewidth}{0.4pt}
+
+  % --- Đánh số section liên tục (không reset theo chapter) ---
+  \usepackage{chngcntr}
+  \counterwithout{figure}{chapter}
+  \counterwithout{table}{chapter}
+
+  % ============================================================================
+  \begin{document}
+
+  % ============================================================================
+  %  TRANG BÌA
+  % ============================================================================
+  \begin{titlepage}
+    \begin{center}
+      \textbf{\large ĐẠI HỌC BÁCH KHOA HÀ NỘI}\\[2pt]
+      \textbf{\large TRƯỜNG CÔNG NGHỆ THÔNG TIN VÀ TRUYỀN THÔNG}\\[2pt]
+      \rule{\textwidth}{0.4pt}
+
+      \vspace{1.5cm}
+
+      \includegraphics[width=3.5cm]{logo_new.png}\\[1.5cm]
+
+      {\LARGE\bfseries BÁO CÁO BÀI TẬP LỚN}\\[12pt]
+      {\Large Môn: IT3160 -- Giới thiệu Trí tuệ nhân tạo}
+
+      \vspace{2cm}
+
+      {\huge\bfseries Huấn Luyện AI Xe Tăng Đối Kháng\\[8pt]
+      Bằng Reinforcement Learning (PPO)}
+
+      \vspace{1.5cm}
+
+      {\Large Ứng dụng trong game AZ Tank 2D}
+
+      \vfill
+
+      \vspace{0.5cm}
+      \rule{\textwidth}{0.8pt}
+      \vspace{0.5cm}
+
+      \begin{minipage}[t]{0.5\textwidth}
+        \begin{flushleft}
+          \textit{Sinh viên thực hiện:}\\[5pt]
+          Phạm Đỗ Đức Dương (202416466)\\
+          Cao Thanh Hùng (202416502)
+        \end{flushleft}
+      \end{minipage}%
+      \begin{minipage}[t]{0.5\textwidth}
+        \begin{flushright}
+          \textit{Giảng viên hướng dẫn:}\\[5pt]
+          PGS.TS Lê Thanh Hương
+        \end{flushright}
+      \end{minipage}
+
+      \vspace{1.5cm}
+
+      {\large Hà Nội, \the\year}
+    \end{center}
+  \end{titlepage}
+
+  % ============================================================================
+  %  MỤC LỤC
+  % ============================================================================
+  \tableofcontents
+  \newpage
+
+  % ============================================================================
+  \chapter{Giới thiệu đề tài}
+  % ============================================================================
+
+  \section{Lý do chọn đề tài}
+
+  Trong những năm gần đây, Học tăng cường (Reinforcement Learning -- RL) đã đạt được nhiều bước tiến lớn, mở ra khả năng tự giải quyết các bài toán điều khiển phức tạp thông qua tương tác liên tục với môi trường. Các trò chơi đối kháng thời gian thực (Real-time Combat Games) là môi trường thử nghiệm lý tưởng cho các thuật toán RL nhờ tính động, yêu cầu ra quyết định tốc độ cao và khả năng áp dụng các kỹ năng chiến thuật linh hoạt.
+
+  Dự án \textbf{AZ Tank Game} là trò chơi đối kháng xe tăng 2D được xây dựng trên nền tảng thư viện vật lý Box2D. Trò chơi sở hữu các cơ chế đặc trưng bao gồm: mê cung tạo ngẫu nhiên bằng thuật toán \textit{Recursive Backtracker}, các cổng dịch chuyển không gian (portals), các hộp vật phẩm cung cấp vũ khí đặc biệt (Gatling, Frag Bomb, Homing Missile, Death Ray) và cơ chế đạn nảy độc đáo khi va chạm tường.
+
+  Việc phát triển một xe tăng tự hành thông minh bằng phương pháp lập trình luật truyền thống (Rule-based) đòi hỏi cấu trúc điều kiện cực kỳ cồng kềnh, dễ bị bắt bài và thiếu khả năng thích nghi với môi trường mới. Do đó, đề tài tập trung nghiên cứu áp dụng thuật toán \textbf{PPO (Proximal Policy Optimization)} để đào tạo một tác nhân (Agent) tự hành có khả năng tự học các hành vi chiến thuật từ con số 0: di chuyển linh hoạt trong mê cung, chủ động né đạn kẻ địch, nhặt vật phẩm hỗ trợ và tận dụng địa hình để tiêu diệt đối thủ.
+
+  \section{Mục tiêu của bài tập lớn}
+
+  \subsection{Mục tiêu nghiên cứu}
+  \begin{itemize}
+    \item Nghiên cứu sâu cơ sở lý thuyết của Học tăng cường trong không gian hành động rời rạc và thuật toán \textbf{PPO} kết hợp với cơ chế \textbf{GAE (Generalized Advantage Estimation)}.
+    \item Tìm hiểu và áp dụng kỹ thuật tạo hình phần thưởng (\textbf{Reward Shaping}) để khắc phục bài toán phần thưởng thưa thớt (sparse rewards) trong không gian mê cung.
+    \item Nghiên cứu phương pháp huấn luyện lũy tiến (\textbf{Curriculum Learning}) kết hợp kỹ thuật tự đối đầu (\textbf{Self-Play}) để cải thiện chất lượng chính sách của mô hình.
+  \end{itemize}
+
+  \subsection{Mục tiêu kỹ thuật}
+  \begin{itemize}
+    \item Tích hợp lõi vật lý trò chơi viết bằng \textbf{C++/Box2D} với môi trường \textbf{Gymnasium} của Python thông qua thư viện liên kết \textbf{Pybind11}, đảm bảo tốc độ truyền nhận dữ liệu ở mức tối ưu.
+    \item Thiết kế không gian quan sát (52 chiều) và không gian hành động phù hợp để mô hình nắm bắt đầy đủ thông tin môi trường.
+    \item Xây dựng hệ thống huấn luyện đa luồng (Headless Mode) chạy hoàn toàn trên CPU nhằm tăng tốc lấy mẫu dữ liệu.
+    \item Triển khai lộ trình Curriculum Learning gồm \textbf{11 giai đoạn} tương ứng với các cấp độ Bot đối thủ từ bia đứng yên đến Bot bắn tỉa nảy tường cấp độ tối đa (Level~7).
+    \item Export mô hình đã train sang file nhị phân \texttt{.bin} và chạy inference thuần C++ mà \textbf{không cần Python} khi chơi game.
+  \end{itemize}
+
+  \subsection{Mục tiêu đánh giá}
+  \begin{itemize}
+    \item Đo lường và vẽ biểu đồ quá trình hội tụ của phần thưởng tích lũy (Cumulative Reward), hàm mất mát giá trị (Value Loss) và độ dài Episode qua các giai đoạn.
+    \item Đánh giá chất lượng mô hình AI khi chiến đấu trực quan chống lại các Bot luật (Rule-Based Bots) từ dễ đến khó và khi đối đầu với chính các phiên bản cũ của mình.
+  \end{itemize}
+
+  % ============================================================================
+  \chapter*{Phân công nhiệm vụ}
+  \addcontentsline{toc}{chapter}{Phân công nhiệm vụ}
+  % ============================================================================
+
+  \begin{table}[H]
+  \centering
+  \renewcommand{\arraystretch}{1.5}
+  \begin{tabular}{|l|c|p{8cm}|c|}
+  \hline
+  \textbf{Họ và tên} & \textbf{MSSV} & \textbf{Nhiệm vụ} & \textbf{Đánh giá} \\
+  \hline
+  Phạm Đỗ Đức Dương & 202416466 & 
+  - Cài đặt môi trường AZ Tank Game bằng Box2D. \newline 
+  - Xây dựng hệ thống Bot đối thủ đa cấp độ (Rule-based). \newline 
+  - Viết báo cáo phần kiến trúc hệ thống và thuật toán. & 50\% \\
+  \hline
+  Cao Thanh Hùng & 202416502 & 
+  - Tích hợp môi trường Gymnasium và thiết kế hàm phần thưởng. \newline 
+  - Cài đặt và huấn luyện mô hình PPO (Curriculum Learning). \newline 
+  - Chạy thực nghiệm, đánh giá kết quả và thiết kế slide. & 50\% \\
+  \hline
+  \end{tabular}
+  \caption*{Bảng 1: Bảng phân công nhiệm vụ}
+  \end{table}
+  \newpage
+
+  % ============================================================================
+  \chapter{Phân tích bài toán}
+  % ============================================================================
+
+  \section{Giới thiệu môi trường trò chơi}
+
+  Môi trường \textbf{AZ Tank Game} là một thế giới 2D giới hạn kích thước $960 \times 720$ pixels. Lõi vật lý được tính toán bằng Box2D với hệ số tỉ lệ $SCALE = 30.0$ (1 mét trong Box2D tương đương 30 pixels). Bản đồ bao gồm hệ thống tường gạch và tường gỗ được tạo ngẫu nhiên. Hai xe tăng (AI của người học và đối thủ) sẽ thi đấu đối kháng trực tiếp.
+
+  Đạn được bắn ra từ xe tăng sẽ nảy khi va chạm với các cạnh tường. Ngoài ra, trên bản đồ sẽ xuất hiện ngẫu nhiên:
+  \begin{itemize}
+    \item \textbf{Hộp vật phẩm hỗ trợ}: Cho phép xe tăng sở hữu vũ khí đặc biệt (Gatling, Frag Bomb, Homing Missile, Death Ray) hoặc kích hoạt khiên chắn vật lý.
+    \item \textbf{Cổng dịch chuyển (Portals)}: Gồm 2 cổng liên kết với nhau. Khi xe tăng hoặc đạn đi vào cổng A, nó sẽ tức thời xuất hiện tại cổng B với cùng hướng vận tốc.
+  \end{itemize}
+
+  \section{Đặc điểm môi trường bài toán}
+
+  \begin{itemize}
+    \item \textbf{Môi trường thời gian thực (Real-time)}: Game chạy ở tần số mô phỏng vật lý cố định 60 FPS ($dt = 1/60$ giây). Tác nhân phải ra quyết định liên tục ở mỗi bước thời gian.
+    \item \textbf{Tính ngẫu nhiên cao (Stochasticity)}: Mỗi ván chơi sinh một mê cung mới bằng thuật toán \textit{Recursive Backtracker}. Vị trí xuất hiện của 2 xe tăng, cổng dịch chuyển và hộp vật phẩm cũng thay đổi ngẫu nhiên.
+    \item \textbf{Quan sát cục bộ (Local Observability)}: Thay vì sử dụng hình ảnh thô toàn màn hình (gây nặng và tốn tài nguyên), tác nhân sử dụng thông tin cảm biến tọa độ tương đối từ chính nó để tối ưu hóa khả năng khái quát hóa.
+  \end{itemize}
+
+  \section{Không gian trạng thái (Observation Space -- 52 chiều)}
+
+  Trạng thái quan sát cung cấp cho mô hình AI là một vector \textbf{52 chiều} chứa các giá trị số thực đã chuẩn hóa về khoảng $[-1.0, 1.0]$. Bảng~\ref{tab:obs} mô tả cấu trúc chi tiết.
+
+  \begin{table}[H]
+  \centering
+  \caption{Cấu trúc vector quan sát 52 chiều.}
+  \label{tab:obs}
+  \small
+  \renewcommand{\arraystretch}{1.25}
+  \begin{adjustbox}{max width=\textwidth}
+  \begin{tabular}{c l c p{9cm}}
+    \toprule
+    \textbf{Chỉ số} & \textbf{Nhóm thông tin} & \textbf{Dim} & \textbf{Mô tả chi tiết} \\
+    \midrule
+    0--4   & Self State       & 5  & Hướng xoay ($\cos\theta$, $\sin\theta$), vận tốc tuyến tính cục bộ ($V_x/3.0$, $V_y/3.0$), vận tốc góc ($\omega/3.0$) chuẩn hóa theo vận tốc tối đa 3.0 m/s. \\
+    5--14  & Enemy Info       & 10 & Tọa độ tương đối địch ($X/L_{max}$, $Y/L_{max}$), khoảng cách chuẩn hóa, chỉ số tầm nhìn thẳng (Line of Sight), vận tốc cục bộ địch, hiệu hướng xoay tương đối, tốc độ áp sát (Approach Speed), và chỉ số địch có thấy mình không (Reverse LoS). \\
+    15--22 & Bullet Radar     & 8  & Thông tin 2 viên đạn nguy hiểm nhất đang bay về phía mình. Mỗi viên gồm: vị trí tương đối, thời gian va chạm ước tính (TTC), khoảng cách trượt nhỏ nhất (Miss Distance). \\
+    23--30 & Wall Radar       & 8  & Khoảng cách tới tường theo 8 hướng quét: $-135°$, $-90°$, $-45°$, $0°$, $+45°$, $+90°$, $+135°$, $180°$. Giá trị là tỉ lệ khoảng cách va chạm $\in [0, 1]$. \\
+    31--33 & A* Navigation    & 3  & Tọa độ waypoint tiếp theo trên đường đi A* ($X/L_{max}$, $Y/L_{max}$) và khoảng cách đường đi thực tế tới kẻ địch qua lưới (chuẩn hóa theo 48.0). \\
+    34--38 & Status           & 5  & Số đạn đặc biệt hiện tại, trạng thái hồi chiêu nòng súng, số đạn địch, trạng thái khiên, hồi chiêu khiên. \\
+    39--43 & Weapon Type      & 5  & Vector One-Hot loại vũ khí đang trang bị: [Normal, Gatling, Frag, Missile, Death Ray]. \\
+    44--51 & Previous Action  & 8  & Vector One-Hot hành động ở bước trước (Move: 3, Turn: 3, Shoot: 2) giúp duy trì tính liên tục hành vi. \\
+    \bottomrule
+  \end{tabular}
+  \end{adjustbox}
+  \end{table}
+
+  Toàn bộ giá trị được biểu diễn dưới dạng tọa độ cục bộ (local frame) tương đối so với hướng hiện tại của xe tăng. Điều này giúp mô hình khái quát hóa tốt trên mọi bản đồ và vị trí spawn khác nhau.
+
+  \section{Không gian hành động (Action Space)}
+
+  Để tương thích tốt nhất với mạng nơ-ron rời rạc, hành động của xe tăng được thiết kế dưới dạng không gian \textbf{MultiDiscrete([3, 3, 2])}, tương ứng với việc nhấn đồng thời 3 nhóm phím điều khiển độc lập:
+
+  \begin{enumerate}
+    \item \textbf{Di chuyển tuyến tính (Move)}: 0 = Đứng yên, 1 = Tiến, 2 = Lùi.
+    \item \textbf{Xoay thân xe (Turn)}: 0 = Không xoay, 1 = Quay trái, 2 = Quay phải.
+    \item \textbf{Kích hoạt phát bắn (Shoot)}: 0 = Không bắn, 1 = Bắn.
+  \end{enumerate}
+
+  Tổng cộng có $3 \times 3 \times 2 = 18$ tổ hợp hành động mỗi frame. Thiết kế MultiDiscrete cho phép AI kết hợp di chuyển, xoay và bắn cùng lúc -- phản ánh đúng cách thức người chơi nhấn phím.
+
+  \section{Hệ thống phần thưởng (Reward Shaping)}
+  \label{sec:reward}
+
+  Thiết kế hàm phần thưởng là yếu tố quan trọng nhất quyết định sự hội tụ của mô hình. Hệ thống phần thưởng sử dụng kỹ thuật \textbf{Reward Shaping} để dẫn dắt hành vi xe tăng. Tất cả các phần thưởng nhỏ dẫn dắt được nhân với hệ số điều hướng $SF$ (Shaping Factor) để giảm dần ở các giai đoạn cuối, giúp mô hình tập trung vào kết quả thắng/thua.
+
+  \subsection{Phần thưởng mục tiêu cốt lõi (Sparse Rewards)}
+  \begin{itemize}
+    \item \textbf{Tiêu diệt kẻ địch}: $+5.0$.
+    \item \textbf{Bị kẻ địch tiêu diệt}: $-5.0$.
+    \item \textbf{Tự sát} (đạn nảy tường bắn trúng mình): $-10.0$ (phạt rất nặng).
+  \end{itemize}
+
+  \subsection{Phần thưởng điều hướng và di chuyển (Dense Rewards)}
+  \begin{itemize}
+    \item \textbf{Time Penalty}: $-0.002 \times \max(0.1, SF)$ mỗi step để kích thích AI kết thúc trận nhanh.
+    \item \textbf{Approaching Reward}: $+0.005 \times SF$ nếu khoảng cách A* tới địch giảm so với step trước. Bonus thêm $(d_{min} - d) \times 0.02 \times SF$ khi phá kỷ lục khoảng cách gần nhất.
+    \item \textbf{A* Waypoint Following}: $+0.008 \times SF$ khi xe tăng xoay mặt về waypoint tiếp theo ($\cos(\theta_{wp}) > 0.7$) và đang nhấn lệnh tiến.
+  \end{itemize}
+
+  \subsection{Hình phạt va chạm và tránh kẹt}
+  \begin{itemize}
+    \item \textbf{Đâm tường}: $-0.005 \times SF$ mỗi step va chạm tường tĩnh.
+    \item \textbf{Kẹt góc (Stuck Penalty)}: $-0.01 \times SF$ khi phát lệnh di chuyển nhưng vận tốc thực cực nhỏ ($V < 0.2$ m/s) trong lúc đang chạm tường.
+    \item \textbf{Camping Penalty}: $-0.01 \times SF$ nếu di chuyển dưới 30 pixels trong 60 frame liên tục ở khoảng cách xa địch ($>240$ px). Phạt $-0.02 \times SF$ nếu cả hai xe tăng đều đứng yên.
+    \item \textbf{Ramming Penalty}: $-0.005 \times SF$ khi đâm trực tiếp vào đối thủ.
+    \item \textbf{Jerky Movement Penalty}: $-0.001 \times SF$ khi liên tục đổi chiều quay hoặc di chuyển giữa 2 frame liên tiếp.
+  \end{itemize}
+
+  \subsection{Phần thưởng chiến đấu và né đạn}
+  \begin{itemize}
+    \item \textbf{Bắn trúng LoS}: $+(0.02 + \max(0, \cos\theta \times 0.02)) \times SF$ khi bắn đúng lúc địch trong tầm nhìn thẳng.
+    \item \textbf{Spam Penalty}: $-0.03 \times SF$ khi bắn mù không thấy địch.
+    \item \textbf{Bullet Proximity Penalty}: Phạt tỉ lệ thuận mức nguy hiểm khi đạn bay gần:
+    \begin{equation}
+      \text{Penalty} = -0.005 \times \text{closeness} \times \text{proximity} \times SF
+    \end{equation}
+    với $\text{closeness} = 1 - \frac{\text{dist}}{8.0}$ và $\text{proximity} = 1 - \frac{\text{perpDist}}{2.5}$.
+    \item \textbf{Rush Reward}: $+0.01 \times SF$ khi tiến thẳng về địch đang đứng yên bắn tỉa.
+  \end{itemize}
+
+  \subsection{Phân tích và nhận xét}
+
+  Thiết kế trạng thái kết hợp cảm biến tia quét cục bộ với tọa độ waypoint từ A* giúp tác nhân học được khả năng điều hướng tối ưu trong mê cung phức tạp mà không phụ thuộc kích thước bản đồ. Hệ số suy giảm $SF$ giải quyết triệt để mâu thuẫn giữa hành vi cục bộ (né tường, nhặt đồ) và mục tiêu toàn cục (tiêu diệt đối thủ).
+
+  % ============================================================================
+  \chapter{Cơ sở lý thuyết và thuật toán}
+  % ============================================================================
+
+  \section{Tổng quan về Học tăng cường (Reinforcement Learning)}
+
+  Học tăng cường mô tả quá trình tương tác giữa tác nhân (Agent) và môi trường (Environment) dưới dạng một Tiến trình Quyết định Markov (Markov Decision Process -- MDP) bao gồm bộ 5 tham số $(S, A, P, R, \gamma)$:
+  \begin{itemize}
+    \item $S$: Không gian trạng thái.
+    \item $A$: Không gian hành động.
+    \item $P(s_{t+1}|s_t, a_t)$: Xác suất chuyển trạng thái.
+    \item $R(s_t, a_t)$: Hàm phần thưởng nhận được.
+    \item $\gamma \in [0, 1)$: Hệ số chiết khấu phần thưởng trong tương lai.
+  \end{itemize}
+
+  Mục tiêu của tác nhân là tìm kiếm một chính sách (policy) $\pi(a|s)$ tối ưu hóa tổng lượng phần thưởng tích lũy kỳ vọng dài hạn:
+  \begin{equation}
+    J(\pi) = \mathbb{E}_{\tau \sim \pi}\left[\sum_{t=0}^{\infty}\gamma^t R(s_t, a_t)\right]
+  \end{equation}
+
+  Sơ đồ tương tác Agent--Environment được minh họa trong Hình~\ref{fig:rl_loop}.
+
+  \begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[
+      box/.style={draw, rounded corners=4pt, minimum width=3cm, minimum height=1.2cm, align=center, font=\small\bfseries},
+      arr/.style={-{Stealth[length=6pt]}, thick}
+    ]
+      \node[box, fill=blue!10] (agent) at (0,2) {Agent\\$\pi_\theta(a|s)$};
+      \node[box, fill=green!10] (env) at (0,0) {Environment\\AZ Tank Game};
+
+      \draw[arr, blue!70] (agent.east) -- ++(1.5,0) |- node[right, pos=0.25, font=\small]{Hành động $a_t$} (env.east);
+      \draw[arr, green!60!black] (env.west) -- ++(-1.5,0) |- node[left, pos=0.25, font=\small]{Trạng thái $s_{t+1}$, Phần thưởng $r_t$} (agent.west);
+    \end{tikzpicture}
+    \caption{Vòng lặp tương tác Agent--Environment trong Reinforcement Learning.}
+    \label{fig:rl_loop}
+  \end{figure}
+
+  \section{Thuật toán PPO (Proximal Policy Optimization)}
+
+  PPO là thuật toán học tăng cường thuộc nhóm Policy Gradient, hoạt động theo kiến trúc Actor-Critic. Mạng Actor dự đoán phân phối hành động $\pi_\theta(a|s)$, mạng Critic xấp xỉ hàm giá trị trạng thái $V_\phi(s)$.
+
+  PPO giải quyết vấn đề bất ổn định của Policy Gradient truyền thống bằng cách sử dụng \textbf{hàm mục tiêu cắt (Clipped Surrogate Objective)}:
+  \begin{equation}
+    L^{CLIP}(\theta) = \hat{\mathbb{E}}_t\left[\min\Big(r_t(\theta)\hat{A}_t, \;\text{clip}\big(r_t(\theta), 1-\epsilon, 1+\epsilon\big)\hat{A}_t\Big)\right]
+    \label{eq:ppo_clip}
+  \end{equation}
+
+  Trong đó:
+  \begin{itemize}
+    \item $r_t(\theta) = \frac{\pi_\theta(a_t|s_t)}{\pi_{\theta_{old}}(a_t|s_t)}$ là tỷ lệ xác suất giữa chính sách mới và cũ.
+    \item $\epsilon = 0.2$ là tham số cắt, giới hạn mức thay đổi chính sách.
+    \item $\hat{A}_t$ là giá trị lợi thế (Advantage Value), đo lường mức độ hiệu quả của hành động so với giá trị trung bình kỳ vọng.
+  \end{itemize}
+
+  \subsection{Hàm mất mát tổng thể (Total Loss)}
+
+  Hàm mất mát của PPO được tối ưu hóa đồng thời qua 3 thành phần:
+  \begin{equation}
+    L^{PPO}(\theta, \phi) = L^{CLIP}(\theta) - c_1 L^{VF}(\phi) + c_2 S[\pi_\theta](s_t)
+    \label{eq:ppo_total}
+  \end{equation}
+
+  Trong đó:
+  \begin{itemize}
+    \item $L^{VF}(\phi) = \hat{\mathbb{E}}_t\left[(V_\phi(s_t) - V^{target}_t)^2\right]$ là sai số bình phương trung bình xấp xỉ giá trị (Critic Loss).
+    \item $S[\pi_\theta](s_t)$ là entropy của chính sách, khuyến khích tính khám phá ngẫu nhiên.
+    \item Hệ số mặc định: $c_1 = 0.5$, $c_2$ thay đổi theo giai đoạn huấn luyện ($0.05 \to 0.003$).
+  \end{itemize}
+
+  \section{Ước lượng lợi thế GAE (Generalized Advantage Estimation)}
+
+  GAE tính toán $\hat{A}_t$ cân bằng giữa phương sai (variance) và độ chệch (bias) bằng cách kết hợp sai số TD-error đa bước thông qua tham số $\lambda$:
+  \begin{equation}
+    \hat{A}_t^{GAE(\gamma,\lambda)} = \sum_{l=0}^{\infty}(\gamma\lambda)^l \delta_{t+l}^V
+    \label{eq:gae}
+  \end{equation}
+  với sai số TD-error: $\delta_t^V = r_t + \gamma V(s_{t+1}) - V(s_t)$.
+
+  Trong dự án, các giá trị $\gamma = 0.99$ và $\lambda = 0.95$ được sử dụng, đây là cấu hình tiêu chuẩn giúp quá trình hội tụ ổn định nhất.
+
+  \section{Các thuật toán hoạch định đường đi (Pathfinding)}
+
+  \subsection{Thuật toán Dijkstra}
+  
+  Thuật toán Dijkstra là một thuật toán cấu trúc tham lam (Greedy-structured algorithm) dùng để giải quyết bài toán đường đi ngắn nhất từ một nguồn duy nhất trên đồ thị có trọng số không âm. Trong hệ thống định tuyến của dự án, Dijkstra cung cấp nền tảng toán học để vét cạn không gian trạng thái.
+
+  \subsubsection{A. Mô hình hóa không gian trạng thái bằng đồ thị $G(V, E)$ và Hàm chi phí $g(n)$}
+
+  \begin{figure}[H]
+      \centering
+      \includegraphics[width=0.75\textwidth]{image/discretize.png}
+      \caption{Minh họa rời rạc hóa bản đồ.}
+      \label{fig:discretize}
+  \end{figure}
+
+  Môi trường mê cung liên tục được rời rạc hóa thành đồ thị lưới (Grid graph) $G = (V, E)$ với cấu trúc như sau:
+
+  \begin{itemize}
+      \item \textbf{Tập các đỉnh (Vertices) $V$:} Mỗi đỉnh $v \in V$ đại diện cho một ô lưới tự do. Không gian trạng thái được định nghĩa qua tọa độ Descartes:
+      $$V = \{v = (x, y) \in \mathbb{Z}^2 \mid \text{IsObstacle}(x, y) = \text{False}\}$$
+      
+      \item \textbf{Tập các cạnh (Edges) $E$:} Biểu diễn khả năng chuyển dịch giữa các ô lân cận theo mô hình kết nối $8$-hướng. Cạnh $e = (u, v) \in E$ tồn tại khi và chỉ khi $u$ và $v$ kề nhau trong lưới.
+      
+      \item \textbf{Hàm trọng số cạnh $w(u, v)$:} Trọng số biểu thị khoảng cách hình học Euclidean giữa tâm hai ô kề nhau:
+      $$w(u, v) = \begin{cases} 
+        1.0, & \text{nếu } \|u - v\|_1 = 1 \text{ (Hướng chính)} \\
+        \sqrt{2}, & \text{nếu } \|u - v\|_1 = 2 \text{ và } \|u - v\|_\infty = 1 \text{ (Hướng chéo)}
+     \end{cases}$$
+     
+      \item \textbf{Hàm chi phí thực tế $g(n)$:} Tổng trọng số tích lũy dọc theo quỹ đạo chuyển dịch tối ưu từ nút gốc $s_{\text{start}}$ đến $n$. Gọi đường đi $P = (v_0, v_1, \dots, v_k)$ với $v_0 = s_{\text{start}}$ và $v_k = n$:
+      $$g(n) = \min_{P} \sum_{i=1}^{k} w(v_{i-1}, v_{i})$$
+  \end{itemize}
+
+  \subsubsection{B. Mô tả thuật toán Dijkstra}
+
+  Để chuẩn hóa quy trình thực thi, cơ chế lan truyền sóng và các bước nới lỏng cạnh được cấu trúc hóa dưới dạng thuật toán logic mã giả như sau:
+
+  \begin{algorithm}[H]
+  \caption{Thuật toán Dijkstra trên không gian lưới 8-hướng}
+  \begin{algorithmic}[1]
+  \Require Đồ thị lưới $G(V, E)$, nút bắt đầu $s_{\text{start}}$, nút đích $s_{\text{goal}}$, hàm trọng số cạnh $w(u, v)$.
+  \Ensure Quỹ đạo dịch chuyển ngắn nhất từ $s_{\text{start}}$ đến $s_{\text{goal}}$ và tập chi phí tối ưu $g$.
+
+  \Statex \textbf{1. Khởi tạo:}
+  \For{mỗi đỉnh $v \in V$}
+      \State $g(v) \gets \infty$
+      \State $\text{parent}(v) \gets \text{Null}$
+  \EndFor
+  \State $g(s_{\text{start}}) \gets 0$
+  \State $Q \gets \emptyset$ \Comment{$Q$ là hàng đợi ưu tiên Min-Heap sắp xếp theo giá trị $g$}
+  \State $Q.\text{Push}(s_{\text{start}}, 0)$
+  \State $S \gets \emptyset$ \Comment{$S$ là tập đóng lưu các nút đã tối ưu hóa}
+
+  \Statex \textbf{2. Vòng lặp:}
+  \While{$Q \neq \emptyset$}
+      \State $u \gets \arg\min_{n \in Q} g(n)$
+      \State $Q.\text{Pop}(u)$
+      \State $S \gets S \cup \{u\}$ 
+      
+      \If{$u = s_{\text{goal}}$}
+          \State \textbf{break} 
+      \EndIf
+      
+      \For{$v \in N(u)$}
+          \If{$v \notin S$}
+              \State $\text{new\_cost} \gets g(u) + w(u, v)$
+              \If{$\text{new\_cost} < g(v)$}
+                  \State $g(v) \gets \text{new\_cost}$
+                  \State $\text{parent}(v) \gets u$
+                  \State $Q.\text{PushOrUpdate}(v, g(v))$
+              \EndIf
+          \EndIf
+      \EndFor
+  \EndWhile
+
+  \State \Return $\text{parent}$ và $g(s_{\text{goal}})$
+  \end{algorithmic}
+  \end{algorithm}
+
+  \subsubsection{C. Chứng minh tính tối ưu toàn cục}
+
+  Tính đúng đắn của thuật toán Dijkstra dựa trên điều kiện trọng số cạnh không âm: $\forall (u, v) \in E, w(u, v) \geq 0$. Trong môi trường lưới của dự án, điều này luôn thỏa mãn vì $w(u,v) \in \{1.0, \sqrt{2}\}$.
+
+  \noindent\textbf{Mệnh đề:} Khi một nút $u$ được chuyển từ Tập biên $Q$ sang Tập đóng $S$, giá trị $g(u)$ đạt tối ưu toàn cục, tức là $g(u) = \delta(s_{\text{start}}, u)$ (với $\delta$ là khoảng cách ngắn nhất thực tế).
+
+  \noindent\textbf{Chứng minh (Phản chứng):}
+  \begin{enumerate}
+      \item Giả sử $u$ là nút đầu tiên được chọn từ $Q$ nhưng có chi phí chưa tối ưu:
+      \begin{equation}\label{eq:phanchung}
+      g(u) > \delta(s_{\text{start}}, u)
+      \end{equation}
+      
+      \item Gọi $P^*$ là đường đi ngắn nhất thực tế từ $s_{\text{start}}$ đến $u$. Vì $s_{\text{start}} \in S$ và $u \in Q$, trên quỹ đạo $P^*$ tồn tại một cạnh $(x, y)$ nối từ tập đóng ra tập mở với $x \in S$ and $y \in Q$.
+      
+      \item Do $u$ là nút đầu tiên bị giả sử sai, nút $x \in S$ trước đó đã tối ưu:
+      $$g(x) = \delta(s_{\text{start}}, x)$$
+      
+      \item Do cạnh $(x, y)$ đã được nới lỏng khi $x$ vào $S$, ta có:
+      $$g(y) \leq g(x) + w(x, y) = \delta(s_{\text{start}}, y)$$
+      
+      \item Vì cấu trúc đồ thị có trọng số không âm, chi phí từ $y$ đến $u$ thỏa mãn $\delta(y, u) \geq 0$. Suy ra:
+      $$\delta(s_{\text{start}}, y) \leq \delta(s_{\text{start}}, y) + \delta(y, u) = \delta(s_{\text{start}}, u)$$
+      Từ hai bước trên dẫn đến hệ thức:
+      \begin{equation}\label{eq:hequa1}
+      g(y) \leq \delta(s_{\text{start}}, u)
+      \end{equation}
+      
+      \item Mặt khác, vì thuật toán chọn $u$ từ cấu trúc Min-Heap $Q$ tại bước này thay vì chọn $y$, nên:
+      \begin{equation}\label{eq:hequa2}
+      g(u) \leq g(y)
+      \end{equation}
+      
+      \item Từ \eqref{eq:hequa1} và \eqref{eq:hequa2}, ta thu được:
+      $$g(u) \leq \delta(s_{\text{start}}, u)$$
+      Điều này mâu thuẫn trực tiếp với giả thiết phản chứng ban đầu tại \eqref{eq:phanchung}.
+  \end{enumerate}
+  Do đó, giả thiết sai. Thuật toán Dijkstra luôn đảm bảo tìm được đường đi tối ưu toàn cục.
+
+  \subsection{Thuật toán A*}
+
+  Thuật toán A* cải tiến Dijkstra bằng một hàm heuristic để định hướng luồng tìm kiếm về phía đích $s_{\text{goal}}$, giảm không gian trạng thái cần duyệt.
+
+  \subsubsection{A. Cấu trúc hàm đánh giá tổng thể $f(n)$}
+
+  Tại mỗi trạng thái nút $n \in V$, chi phí ước lượng của quỹ đạo tối ưu đi qua $n$ được xác định thông qua hàm tuyến tính:
+  \begin{equation}
+  f(n) = g(n) + h(n)
+  \end{equation}
+
+  Trong đó:
+  \begin{itemize}
+      \item $g(n)$: Chi phí thực tế tích lũy tối ưu từ nút gốc $s_{\text{start}}$ đến nút hiện tại $n$ (tương tự định nghĩa trong Dijkstra).
+      \item $h(n)$: Hàm Heuristic, biểu thị chi phí ước tính từ nút hiện tại $n$ đến điểm đích $s_{\text{goal}}$.
+  \end{itemize}
+
+  \subsubsection{B. Hàm Heuristic và Mô tả thuật toán}
+
+  Tùy thuộc vào cấu trúc bậc tự do dịch chuyển của lưới, hàm Heuristic $h(n)$ được xác định bởi một trong hai cấu trúc chuẩn khoảng cách (norm) sau:
+  \begin{itemize}
+      \item \textbf{Khoảng cách Manhattan ($L_1$ norm):} Phù hợp cho không gian lưới kết nối $4$-hướng.
+      $$h(n) = |x_n - x_{\text{goal}}| + |y_n - y_{\text{goal}}|$$
+      \item \textbf{Khoảng cách Euclidean ($L_2$ norm):} Phù hợp cho không gian lưới kết nối $8$-hướng của dự án.
+      $$h(n) = \sqrt{(x_n - x_{\text{goal}})^2 + (y_n - y_{\text{goal}})^2}$$
+  \end{itemize}
+
+  Cấu trúc thuật toán A* phân tách việc sắp xếp hàng đợi ưu tiên theo khóa $f(n)$ nhưng cập nhật nới lỏng cạnh dựa trên hàm chi phí thực tế $g(n)$, cụ thể như sau:
+
+  \begin{algorithm}[H]
+  \caption{A* Pathfinding}
+  \begin{algorithmic}[1]
+  \Require $G(V, E)$, $s_{\text{start}}$, $s_{\text{goal}}$, $h(n)$, $w(u, v)$
+  \Ensure Optimal path from $s_{\text{start}}$ to $s_{\text{goal}}$
+
+  \For{each $v \in V$}
+      \State $g(v) \gets \infty, \quad f(v) \gets \infty, \quad \text{parent}(v) \gets \text{Null}$
+  \EndFor
+  \State $g(s_{\text{start}}) \gets 0$
+  \State $f(s_{\text{start}}) \gets h(s_{\text{start}})$
+  \State $Q \gets \emptyset$
+  \State $Q.\text{Push}(s_{\text{start}}, f(s_{\text{start}}))$
+  \State $S \gets \emptyset$
+
+  \While{$Q \neq \emptyset$}
+      \State $u \gets \arg\min_{n \in Q} f(n)$
+      \State $Q.\text{Pop}(u)$
+      \State $S \gets S \cup \{u\}$
+      
+      \If{$u = s_{\text{goal}}$}
+          \State \textbf{break}
+      \EndIf
+      
+      \For{each $v \in N(u)$}
+          \If{$v \in S$} 
+              \State \textbf{continue}
+          \EndIf
+          
+          \State $\text{new\_g} \gets g(u) + w(u, v)$
+          \If{$\text{new\_g} < g(v)$}
+              \State $\text{parent}(v) \gets u$
+              \State $g(v) \gets \text{new\_g}$
+              \State $f(v) \gets g(v) + h(v)$
+              \State $Q.\text{PushOrUpdate}(v, f(v))$
+          \EndIf
+      \EndFor
+  \EndWhile
+
+  \State \Return $\text{parent}$
+  \end{algorithmic}
+  \end{algorithm}
+
+  \subsubsection{C. Chứng minh toán học về tính Chấp nhận được và tính Nhất quán}
+
+  Để thuật toán A* hội tụ về nghiệm tối ưu toàn cục mà không cần duyệt lại các trạng thái đã đóng, hàm Heuristic bắt buộc phải thỏa mãn:
+
+  \paragraph{1. Admissibility}
+
+      \begin{equation}
+      h(n) \leq h^*(n), \quad \forall n \in V
+      \end{equation}
+      Trong đó $h^*(n)$ là chi phí thực tế tối ưu từ $n$ đến $s_{\text{goal}}$.
+      
+      
+      \noindent Giả sử hệ thống tồn tại một nút đích phụ $G_{\text{sub}}$ và nút đích thực tế $G^*$, với chi phí thực tế thỏa mãn:
+  \begin{equation}\label{eq:subopt}
+  g(G_{\text{sub}}) > g(G^*) = f^*
+  \end{equation}
+
+  Xét thời điểm thuật toán sắp sửa chọn $G_{\text{sub}}$ từ Min-Heap $Q$ để kết thúc. Gọi $n$ là một nút bất kỳ chưa được mở rộng nằm trên quỹ đạo tối ưu đi đến $G^*$. Do hàm Heuristic vi phạm tính chấp nhận được tại $n$, ta có:
+  $$h(n) > h^*(n)$$
+
+  Biến đổi hàm đánh giá tổng thể $f(n)$ tại nút này:
+  \begin{equation}
+  f(n) = g(n) + h(n) > g(n) + h^*(n) = f^*
+  \end{equation}
+
+  Kết hợp với điều kiện \eqref{eq:subopt}, do nút đích có $h(G_{\text{sub}}) = 0 \implies f(G_{\text{sub}}) = g(G_{\text{sub}})$, ta thu được chuỗi bất đẳng thức:
+  \begin{equation}
+  f(n) > f^* = g(G^*) \quad \text{và} \quad g(G_{\text{sub}}) > f^* \implies \text{có thể } f(n) > f(G_{\text{sub}})
+  \end{equation}
+
+  Vì $f(G_{\text{sub}}) < f(n)$, cấu trúc Min-Heap $Q$ bắt buộc phải trích xuất và đóng nút $G_{\text{sub}}$ trước nút $n$. Thuật toán dừng lại và trả về quỹ đạo đi qua $G_{\text{sub}}$. Đường đi tìm được không tối ưu.
+
+  \paragraph{2. Bất đẳng thức tam giác}
+      \begin{equation}\label{eq:consistency}
+      h(u) \leq w(u, v) + h(v)
+      \end{equation}
+      
+      Nếu $h(n)$ nhất quán, hàm đánh giá tổng thể $f(n)$ là một hàm không giảm dọc theo mọi chuỗi nút được mở rộng.
+
+      Nếu hàm đánh giá $f(n)$ bị giảm đơn điệu. Do đó, tồn tại một nút $v$ bị đóng trước thông qua một đường đi dài (nhưng có giá trị ước lượng cục bộ nhỏ), sau đó một đường đi ngắn hơn thực tế đi qua $u$ mới tiếp cận đến $v$. Vì $f$ giảm, chi phí mới qua $u$ thấp hơn chi phí đã đóng của $v$. Thuật toán bắt buộc phải mở lại nút $v \in S$ đã đóng.
+
+
+  \subsection{Thuật toán Theta*}
+
+  Mặc dù thuật toán A* đảm bảo tính tối ưu trên cấu trúc đồ thị lưới, kết quả quỹ đạo trả về vẫn bị giới hạn bởi các cạnh của lưới. Thuật toán Theta* giải quyết hạn chế này bằng cách cho phép các cạnh nối xuyên qua các nút không kề nhau nếu có tầm nhìn thẳng.
+
+  \subsubsection{A. Hạn chế hình học của định tuyến trên lưới}
+
+  Trong không gian lưới 8-hướng, vectơ vận tốc hướng của thực thể bị cưỡng bức vào các tập góc là bội số của $45^\circ$. Ngay cả khi giữa hai nút trạng thái hiện tại tồn tại một không gian hoàn toàn trống rỗng, cấu trúc nới lỏng cạnh của A* vẫn bắt buộc quỹ đạo phải bám theo các ô lưới kề cận. Điều này dẫn đến hai hệ quả tiêu cực:
+  \begin{enumerate}
+      \item Chi phí hình học thực tế tăng do độ dài đường gãy khúc luôn lớn hơn hoặc bằng đoạn thẳng nối liền hai điểm.
+      \item Chi phí xoay thân xe tăng mạnh do tần suất thay đổi hướng xuất hiện liên tục trên quỹ đạo.
+  \end{enumerate}
+
+  \subsubsection{B. Mô tả thuật toán}
+
+  \begin{figure}[H]
+      \centering
+      \includegraphics[width=0.75\textwidth]{image/thetastar_vs_astar.png}
+      \caption{So sánh đường đi A* và Theta*.}
+      \label{fig:thetastar_vs_astar}
+  \end{figure}
+
+  Sự cải tiến cốt lõi của Theta* nằm ở quy trình cập nhật nút cha. Khi mở rộng một nút lân cận $v$ từ nút $u$, thuật toán không mặc định gán $\text{parent}(v) = u$ mà kiểm tra tầm nhìn thẳng $\text{LineOfSight}(\text{parent}(u), v)$.
+
+  \begin{algorithm}[H]
+  \caption{Theta* Pathfinding}
+  \begin{algorithmic}[1]
+  \Require $G(V, E)$, $s_{\text{start}}$, $s_{\text{goal}}$, $h(n)$, $w(u, v)$
+  \Ensure Smooth any-angle path from $s_{\text{start}}$ to $s_{\text{goal}}$
+
+  \For{each $v \in V$}
+      \State $g(v) \gets \infty, \quad f(v) \gets \infty, \quad \text{parent}(v) \gets \text{Null}$
+  \EndFor
+  \State $g(s_{\text{start}}) \gets 0, \quad f(s_{\text{start}}) \gets h(s_{\text{start}}), \quad \text{parent}(s_{\text{start}}) \gets s_{\text{start}}$
+  \State $Q \gets \emptyset, \quad S \gets \emptyset$
+  \State $Q.\text{Push}(s_{\text{start}}, f(s_{\text{start}}))$
+
+  \While{$Q \neq \emptyset$}
+      \State $u \gets \arg\min_{n \in Q} f(n)$
+      \State $Q.\text{Pop}(u)$
+      \State $S \gets S \cup \{u\}$
+      
+      \If{$u = s_{\text{goal}}$}
+          \State \textbf{break}
+      \EndIf
+      
+      \For{each $v \in N(u)$}
+          \If{$v \in S$} \State \textbf{continue} 
+          \EndIf
+          
+          \State $p \gets \text{parent}(u)$
+          \If{\Call{LineOfSight}{$p, v$}}
+              \State $\text{new\_g} \gets g(p) + \|p - v\|_2$
+              \If{\text{new\_g} < g(v)}
+                  \State $\text{parent}(v) \gets p$
+                  \State $g(v) \gets \text{new\_g}$
+                  \State $f(v) \gets g(v) + h(v)$
+                  \State $Q.\text{PushOrUpdate}(v, f(v))$
+              \EndIf
+          \Else
+              \State $\text{new\_g} \gets g(u) + w(u, v)$
+              \If{\text{new\_g} < g(v)}
+                  \State $\text{parent}(v) \gets u$
+                  \State $g(v) \gets \text{new\_g}$
+                  \State $f(v) \gets g(v) + h(v)$
+                  \State $Q.\text{PushOrUpdate}(v, f(v))$
+              \EndIf
+          \EndIf
+      \EndFor
+  \EndWhile
+
+  \State \Return $\text{parent}$
+  \end{algorithmic}
+  \end{algorithm}
+
+  \subsubsection{C. Chứng minh toán học về tính mượt mà và tối ưu chiều dài quỹ đạo}
+
+  Tính tối ưu về chiều dài quỹ đạo của Theta* so với A* được chứng minh trực tiếp thông qua Bất đẳng thức tam giác trong không gian Metric Euclidean $(\mathbb{R}^2, \|\cdot\|_2)$.
+
+  \noindent\textbf{Mệnh đề:} Với mọi bước nới lỏng cạnh thỏa mãn điều kiện tồn tại tầm nhìn thẳng giữa $\text{parent}(u)$ và $v$, chi phí tích lũy cập nhật bởi Theta* luôn nhỏ hơn hoặc bằng chi phí tích lũy của A* truyền thống.
+
+  \noindent\textbf{Chứng minh:}
+  \begin{enumerate}
+      \item Gọi $p = \text{parent}(u)$ là nút cha của trạng thái hiện tại $u$, và $v$ là nút lân cận đang được xét duyệt rộng.
+      \item Trong thuật toán A* truyền thống, quỹ đạo bắt buộc phải đi qua nút trung gian $u$, chi phí tích lũy tại $v$ được tính theo công thức:
+      \begin{equation}
+      g_{\text{A*}}(v) = g(u) + w(u, v)
+      \end{equation}
+      Vì $u$ được mở rộng từ $p$, ta có $g(u) = g(p) + \|p - u\|_2$. Do đó:
+      \begin{equation}\label{eq:astar_cost}
+      g_{\text{A*}}(v) = g(p) + \|p - u\|_2 + \|u - v\|_2
+      \end{equation}
+      
+      \item Trong thuật toán Theta*, do $\text{LineOfSight}(p, v) = \text{True}$, chi phí cập nhật trực tiếp từ $p$ đến $v$ là:
+      \begin{equation}\label{eq:thetastar_cost}
+      g_{\text{Theta*}}(v) = g(p) + \|p - v\|_2
+      \end{equation}
+      
+      \item Áp dụng bất đẳng thức tam giác cho ba điểm hình học $p, u, v$ trong không gian:
+      \begin{equation}\label{eq:triangle_ineq}
+      \|p - v\|_2 \leq \|p - u\|_2 + \|u - v\|_2
+      \end{equation}
+      
+      \item Cộng hai vế của \eqref{eq:triangle_ineq} với hằng số chi phí tích lũy $g(p)$:
+      \begin{equation}
+      g(p) + \|p - v\|_2 \leq g(p) + \|p - u\|_2 + \|u - v\|_2
+      \end{equation}
+      
+      \item Thay thế \eqref{eq:astar_cost} và \eqref{eq:thetastar_cost} vào hệ thức, ta thu được kết quả:
+      \begin{equation}
+      g_{\text{Theta*}}(v) \leq g_{\text{A*}}(v)
+      \end{equation}
+  \end{enumerate}
+
+  \noindent Việc loại bỏ các nút trung gian không cần thiết giúp giảm số lượng đỉnh chuyển hướng về mức tối thiểu. 
+
+  \subsection{Tiền xử lý bản đồ và Mô hình hóa không gian cấu hình}
+
+  Để triển khai các thuật toán tìm đường lớp đồ thị, môi trường vật lý liên tục cần được biến đổi cấu trúc thông qua quy trình rời rạc hóa không gian và xây dựng không gian cấu hình an toàn cho thực thể.
+
+  \subsubsection{A. Rời rạc hóa không gian (Grid Discretization)}
+
+  Môi trường Box2D là một không gian liên tục, tuy nhiên các phương pháp hoạch định quỹ đạo như A* hay Dijkstra đòi hỏi một mô hình đồ thị rời rạc. Hệ thống thực hiện ánh xạ bản đồ vật lý thành một lưới ô cờ trạng thái (Occupancy Grid Map):
+
+  \begin{itemize}
+      \item \textbf{Cấu trúc độ phân giải:} Hệ thống thiết lập lưới không gian kích thước $96 \times 72$ ô lưới, tương ứng chính xác với tỉ lệ khung hình hiển thị $4:3$.
+      \item \textbf{Tỉ lệ chuyển đổi không gian:} Với độ phân giải màn hình cố định $1024 \times 768$ pixels, kích thước hình học của mỗi ô lưới đơn vị ($\text{Cell\_Size}$) được xác định bởi:
+      \begin{equation}
+      \text{Cell\_Size} = \frac{1024}{96} = \frac{768}{72} \approx 10.6 \text{ pixels/cell}
+      \end{equation}
+      \item \textbf{Tiêu chí tối ưu hóa:} Kích thước $\text{Cell\_Size} \approx 10.6$ pixels được lựa chọn nhằm cân bằng giữa độ chính xác hình học và chi phí tài nguyên tính toán. Độ phân giải này đủ nhỏ để mô tả chính xác các khe hở hẹp trong mê cung (với chiều rộng hành lang tiêu chuẩn khoảng $90$ pixels), đồng thời khống chế số lượng đỉnh $|V|$ ở mức vừa phải, đảm bảo thời gian thực thi của thuật toán A* luôn giới hạn dưới $< 5\text{ ms}$, không gây trễ chu kỳ của luồng xử lý chính.
+  \end{itemize}
+
+  \subsubsection{B. Bán kính lạm phát (Inflation Radius) và Kỹ thuật Point Robot}
+
+  Do thực thể xe tăng sở hữu kích thước vật lý hữu hạn ($28 \times 28$ pixels), việc lập kế hoạch quỹ đạo trực tiếp cho một "điểm" tọa độ tâm sẽ dẫn đến các va chạm cơ học tại các góc cua của tường. Dự án giải quyết thách thức này bằng cách chuyển đổi không gian làm việc thực (Workspace) sang Không gian cấu hình (Configuration Space - C-Space):
+
+  \begin{itemize}
+      \item \textbf{Nguyên lý C-Space:} Thay vì mô hình hóa xe tăng dưới dạng hình hộp phức tạp di chuyển giữa các vật cản tĩnh, hệ thống tiến hành "lạm phát" (thổi phồng hình học) biên của toàn bộ các bức tường ra một khoảng bằng bán kính an toàn của xe tăng. Lúc này, xe tăng được thu nhỏ đồng nhất về một điểm chất điểm duy nhất (\textit{Point Robot}).
+      \item \textbf{Xác định tham số hệ thống:} Thiết lập cấu hình bán kính lạm phát trong môi trường vật lý Box2D là:
+      \begin{equation}
+      R_{\text{inflation}} = 0.55\text{ m}
+      \end{equation}
+      Giá trị này được cấu thành từ hai thành phần:
+      \begin{equation}
+      R_{\text{inflation}} = R_{\text{tank}} + \Delta R_{\text{error}}
+      \end{equation}
+      Trong đó, bán kính thực tế của xe tăng là $R_{\text{tank}} = 14\text{ px} \approx 0.47\text{ m}$. Khoảng dư sai số $\Delta R_{\text{error}} = 0.08\text{ m}$ được bổ sung nhằm bù đắp cho phần nhô ra của nòng pháo và sai số động học khi xoay thân xe tăng trong không gian hẹp.
+      \item \textbf{Hệ quả trạng thái:} Mọi ô lưới có khoảng cách Euclidean đến cạnh vật cản gần nhất nhỏ hơn hoặc bằng $0.55\text{ m}$ đều được cập nhật trọng số trạng thái sang mức "Bị chiếm chỗ" ($\text{Blocked} = 1$). Quy trình này thiết lập một hành lang an toàn ảo, đảm bảo nếu tâm của Point Robot di chuyển dọc theo quỹ đạo đã lập kế hoạch, các cạnh vật lý của mô hình xe tăng thực tế chắc chắn không xảy ra va chạm với địa hình mê cung.
+  \end{itemize}
+
+  % ============================================================================
+  \chapter{Thiết kế và cài đặt hệ thống}
+  % ============================================================================
+
+  \section{Kiến trúc tổng thể}
+
+  Hệ thống được thiết kế theo nguyên tắc \textbf{Logic -- Renderer Decoupling}: logic game hoàn toàn tách biệt khỏi đồ họa. Điều này cho phép huấn luyện AI ở chế độ Headless (không cần cửa sổ đồ họa) với tốc độ cực cao.
+
+  \begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[
+      box/.style={draw, rounded corners=4pt, minimum width=2.6cm, minimum height=0.85cm, align=center, font=\small\bfseries},
+      arr/.style={-{Stealth[length=5pt]}, thick},
+      scale=0.95, transform shape
+    ]
+      % Training pipeline
+      \node[box, fill=blue!12] (sb3) at (0,4.5) {Stable-Baselines3\\(PPO)};
+      \node[box, fill=orange!15] (gym) at (0,3) {AZTankEnv\\(Gymnasium)};
+      \node[box, fill=violet!12] (pyb) at (0,1.5) {Pybind11\\(\texttt{azgame\_env})};
+      \node[box, fill=green!12] (eng) at (0,0) {Game Engine\\(C++ / Box2D)};
+
+      \draw[arr] (sb3) -- node[right, font=\scriptsize]{Action [3,3,2]} (gym);
+      \draw[arr] (gym) -- node[right, font=\scriptsize]{\texttt{step()}} (pyb);
+      \draw[arr] (pyb) -- node[right, font=\scriptsize]{\texttt{Update()}} (eng);
+      \draw[arr, dashed, green!60!black] (eng.west) -- ++(-2,0) |- node[left, pos=0.15, font=\scriptsize]{State (52 floats), Reward} (sb3.west);
+
+      % Label
+      \node[above=2pt of sb3, font=\small\itshape, gray] {Nhánh huấn luyện (Python)};
+
+      % Human pipeline
+      \node[box, fill=red!10] (human) at (7,4.5) {Người chơi\\(Keyboard)};
+      \node[box, fill=yellow!15] (main) at (7,3) {\texttt{main.cpp}};
+      \node[box, fill=cyan!10] (render) at (7,1.5) {Renderer\\+ UI (Raylib)};
+
+      \draw[arr] (human) -- node[right, font=\scriptsize]{TankActions} (main);
+      \draw[arr] (main) -- (render);
+      \draw[arr] (main.south west) -- node[above, font=\scriptsize, sloped]{\texttt{Update()}} (eng.east);
+      \draw[arr, dashed] (eng.east) ++(0,0.3) -- ++(3,0) |- node[right, pos=0.3, font=\scriptsize]{Game State} (render.west);
+
+      % Label
+      \node[above=2pt of human, font=\small\itshape, gray] {Nhánh chơi game (C++)};
+    \end{tikzpicture}
+    \caption{Kiến trúc tổng thể hệ thống: nhánh huấn luyện AI (trái) và nhánh chơi game (phải) chia sẻ chung Game Engine C++.}
+    \label{fig:architecture}
+  \end{figure}
+
+  Bảng~\ref{tab:files} liệt kê các file mã nguồn chính và sự phụ thuộc vào Raylib.
+
+  \begin{table}[H]
+  \centering
+  \caption{Cấu trúc file mã nguồn chính.}
+  \label{tab:files}
+  \renewcommand{\arraystretch}{1.2}
+  \begin{tabular}{l c p{8cm}}
+    \toprule
+    \textbf{File} & \textbf{Raylib?} & \textbf{Vai trò} \\
+    \midrule
+    \texttt{game.h/.cpp}     & Không & Game engine chính: Update, ResetMatch, quản lý thế giới vật lý \\
+    \texttt{tank.h/.cpp}     & Không & Logic xe tăng: nhận TankActions, quản lý HP, vũ khí, khiên \\
+    \texttt{bullet.h/.cpp}   & Không & Logic đạn: va chạm, nảy tường, tên lửa đuổi \\
+    \texttt{map.h/.cpp}      & Không & Sinh mê cung (Recursive Backtracker), thuật toán A* \\
+    \texttt{portal.h/.cpp}   & Không & Cổng dịch chuyển A$\leftrightarrow$B \\
+    \texttt{item.h/.cpp}     & Không & Hộp vũ khí (Box2D sensor) \\
+    \texttt{bot.h/.cpp}      & Không & Bot rule-based đa luồng (đối thủ huấn luyện) \\
+    \texttt{ai\_bot.h/.cpp}  & Không & Bot AI (forward pass thuần C++) \\
+    \midrule
+    \texttt{renderer.h/.cpp} & Có & Vẽ game objects, hiệu ứng đồ họa \\
+    \texttt{ui.h/.cpp}       & Có & Giao diện Settings, HUD, custom font \\
+    \texttt{main.cpp}        & Có & Game loop cho chế độ chơi có đồ họa \\
+    \bottomrule
+  \end{tabular}
+  \end{table}
+
+  \section{Cài đặt mô hình PPO}
+
+  \subsection{Kiến trúc mạng nơ-ron (MLP Policy)}
+
+  Mô hình sử dụng mạng kết nối đầy đủ \textbf{MLP (Multi-Layer Perceptron)} dạng \texttt{MlpPolicy} từ thư viện Stable-Baselines3:
+  \begin{itemize}
+    \item \textbf{Đầu vào}: Vector đặc trưng 52 chiều.
+    \item \textbf{Tầng ẩn}: 2 tầng ẩn kết nối đầy đủ, mỗi tầng 64 nơ-ron, hàm kích hoạt $\tanh$.
+    \item \textbf{Đầu ra Actor}: 3 nhánh hành động rời rạc: Move (3 giá trị), Turn (3 giá trị), Shoot (2 giá trị).
+    \item \textbf{Đầu ra Critic}: 1 giá trị $V(s)$ ước lượng giá trị trạng thái.
+  \end{itemize}
+
+  Kiến trúc mạng được minh họa trong Hình~\ref{fig:mlp}.
+
+  \begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[
+      layer/.style={draw, rounded corners, minimum width=1.8cm, minimum height=0.7cm, align=center, font=\small},
+      arr/.style={-{Stealth[length=5pt]}, thick},
+      scale=0.95, transform shape
+    ]
+      \node[layer, fill=blue!10] (input) at (0,0) {Input\\52 floats};
+      \node[layer, fill=orange!15] (h1) at (3.5,0) {Dense 64\\$\tanh$};
+      \node[layer, fill=orange!15] (h2) at (7,0) {Dense 64\\$\tanh$};
+
+      \node[layer, fill=green!12] (o1) at (11, 1) {Move (3)};
+      \node[layer, fill=green!12] (o2) at (11, 0) {Turn (3)};
+      \node[layer, fill=green!12] (o3) at (11,-1) {Shoot (2)};
+      \node[layer, fill=violet!12] (v)  at (11,-2.3) {$V(s)$ (1)};
+
+      \draw[arr] (input) -- (h1);
+      \draw[arr] (h1) -- (h2);
+      \draw[arr] (h2) -- (o1);
+      \draw[arr] (h2) -- (o2);
+      \draw[arr] (h2) -- (o3);
+      \draw[arr, dashed, violet] (h2.south) -- ++(0,-1.5) -| (v.north);
+
+      \node[above=6pt of o1, font=\small\itshape, gray] {Actor};
+      \node[below=6pt of v, font=\small\itshape, gray] {Critic};
+    \end{tikzpicture}
+    \caption{Kiến trúc mạng MLP Policy: Actor (3 đầu ra hành động) và Critic ($V(s)$) chia sẻ hidden layers.}
+    \label{fig:mlp}
+  \end{figure}
+
+  Do kích thước mạng nơ-ron rất nhỏ nhưng tần số lấy mẫu yêu cầu cực lớn (60 FPS), việc tính toán được cấu hình chạy trực tiếp trên \textbf{CPU}. Điều này loại bỏ hoàn toàn độ trễ sao chép dữ liệu giữa RAM và VRAM, mang lại tốc độ huấn luyện thực tế vượt trội.
+
+  \subsection{Lộ trình huấn luyện lũy tiến (Curriculum Learning)}
+
+  Huấn luyện AI từ đầu trong môi trường phức tạp (mê cung, đạn nảy, vật phẩm) rất dễ bị phân kỳ vì Agent luôn bị tiêu diệt mà không nhận được tín hiệu phần thưởng tích cực. Dự án thiết kế lộ trình \textbf{11 giai đoạn} như Bảng~\ref{tab:curriculum}.
+
+  \begin{table}[H]
+  \centering
+  \caption{Lộ trình huấn luyện lũy tiến 11 giai đoạn.}
+  \label{tab:curriculum}
+  \small
+  \renewcommand{\arraystretch}{1.15}
+  \begin{adjustbox}{max width=\textwidth}
+  \begin{tabular}{c c c c r c c c p{4.5cm}}
+    \toprule
+    \textbf{Phase} & \textbf{Map} & \textbf{Items} & \textbf{Bot Level} & \textbf{Steps} & \textbf{SF} & \textbf{LR} & \textbf{Ent.} & \textbf{Mục tiêu huấn luyện} \\
+    \midrule
+    1  & $\times$ & $\times$ & L1  & 500K   & 1.0  & $3\!\times\!10^{-4}$ & 0.05  & Lái xe, bắn mục tiêu tĩnh \\
+    2  & $\times$ & $\times$ & L2  & 500K   & 1.0  & $3\!\times\!10^{-4}$ & 0.05  & Bám đuổi mục tiêu di động \\
+    3  & $\times$ & $\times$ & L3  & 800K   & 1.0  & $3\!\times\!10^{-4}$ & 0.05  & Né đạn cơ bản \\
+    4  & $\times$ & $\times$ & L4  & 1.0M   & 1.0  & $3\!\times\!10^{-4}$ & 0.05  & Đối kháng trực diện \\
+    5  & \checkmark & $\times$ & L4  & 1.5M & 0.9  & $2\!\times\!10^{-4}$ & 0.03  & Điều hướng A* trong mê cung \\
+    6  & \checkmark & $\times$ & L5  & 2.0M & 0.7  & $2\!\times\!10^{-4}$ & 0.03  & Thích nghi đạn nảy 1 lần \\
+    7  & \checkmark & $\times$ & L6  & 3.0M & 0.5  & $1\!\times\!10^{-4}$ & 0.01  & Bắn nảy góc khuất \\
+    8  & \checkmark & $\times$ & L6  & 3.0M & 0.3  & $1\!\times\!10^{-4}$ & 0.01  & Giảm phụ thuộc reward shaping \\
+    9  & \checkmark & \checkmark & L5--6 & 3.0M & 0.15 & $5\!\times\!10^{-5}$ & 0.01 & Portal, khiên, vật phẩm \\
+    10 & \checkmark & \checkmark & L4--6 & 10.0M & 0.05 & $5\!\times\!10^{-5}$ & 0.005 & Marathon: kỹ năng toàn diện \\
+    11 & \checkmark & \checkmark & L7 & 5.0M & 0.03 & $3\!\times\!10^{-5}$ & 0.003 & Boss Rush: Bot tối thượng \\
+    \bottomrule
+  \end{tabular}
+  \end{adjustbox}
+  \end{table}
+
+  \textbf{Nhận xét:} Hệ số $SF$ giảm dần từ 1.0 xuống 0.03 qua 11 phase. Tốc độ học (Learning Rate) và hệ số entropy cũng giảm dần, giúp mô hình chuyển từ giai đoạn khám phá sang khai thác ổn định.
+
+  \subsection{Cơ chế tự đối đầu (Self-Play) và Opponent Pool}
+
+  Từ giai đoạn 9 trở đi, để ngăn chặn overfitting với một tập Bot cố định, hệ thống giới thiệu cơ chế \textbf{Self-Play}:
+  \begin{itemize}
+    \item \textbf{Opponent Pool}: Quét thư mục \texttt{models/} và \texttt{checkpoints/} để nạp các mô hình checkpoint đã lưu.
+    \item \textbf{Sampling}: Mỗi episode, môi trường bốc ngẫu nhiên một đối thủ từ Pool. AI phải chiến thắng mọi phiên bản cũ của chính mình.
+    \item \textbf{Cập nhật động}: Cứ mỗi 100,000 steps, \texttt{SelfPlayCallback} quét nạp thêm checkpoint mới nhất vào Pool.
+  \end{itemize}
+
+  \section{Triển khai Inference thuần C++}
+
+  Sau khi huấn luyện xong, mô hình được export sang file nhị phân \texttt{.bin} (định dạng tùy chỉnh \texttt{AZAI}) chứa trọng số các tầng Dense. Lớp \texttt{AIBot} trong C++ đọc file này và chạy forward pass thuần C++:
+
+  \begin{enumerate}
+    \item Thu thập 52 observations từ trạng thái Box2D (giống hệt lúc train).
+    \item Thực hiện phép nhân ma trận--vector: $y = W \cdot x + b$ qua 2 tầng ẩn với activation $\tanh$.
+    \item Lấy argmax trên 3 nhóm logits đầu ra $\rightarrow$ 3 hành động (Move, Turn, Shoot).
+  \end{enumerate}
+
+  \textbf{Ưu điểm}: không cần Python, không cần ONNX Runtime hay bất kỳ thư viện bên ngoài nào. File model chỉ $\sim$32 KB, inference dưới 0.1ms mỗi frame.
+
+  \section{Bot luật C++ (Rule-Based Bot) -- Đối thủ huấn luyện}
+
+  Để làm đối thủ cho AI qua 11 giai đoạn, một hệ thống Bot rule-based đa luồng được cài đặt bằng C++ với các thuật toán chính:
+
+  \begin{itemize}
+    \item \textbf{Kiến trúc đa luồng}: 2 thread phụ (Movement + Shooting) chạy song song, đồng bộ bằng \texttt{std::mutex} và \texttt{std::condition\_variable}.
+    \item \textbf{Cảm biến}: 5 Whiskers đo vật cản trước/sườn và 72 Laser Rays quét 360° với khả năng tính phản xạ nảy.
+    \item \textbf{Lái đường}: Pure Pursuit bám waypoint A* kết hợp Corridor Center-Seeking (đi giữa hành lang).
+    \item \textbf{Né đạn}: Quét tất cả đạn đối thủ, tính hướng né vuông góc với đường đạn.
+    \item \textbf{Bắn nảy tường (FindBounce)}: Giả lập 180 tia bắn, mỗi tia tính phản xạ tối đa 4 lần. Có cơ chế kiểm tra tự sát (self-hit validation) để loại bỏ tia phản xạ nguy hiểm.
+  \end{itemize}
+
+  Hệ thống Bot được phân thành \textbf{7 cấp độ}: từ Level 1 (bia đứng yên) đến Level 7 (Sniper bắn nảy 4 lần + né đạn hoàn hảo), phục vụ cho lộ trình Curriculum Learning.
+
+  % ============================================================================
+  \chapter{Kết quả thực nghiệm}
+  % ============================================================================
+
+  Chương này trình bày toàn bộ kết quả thực nghiệm, bao gồm: cấu hình hệ thống huấn luyện, các hành vi chiến thuật AI đã tự phát triển, phân tích đường cong hội tụ (Reward, Value Loss, Entropy Loss), kết quả đối đầu với hệ thống Bot, và đánh giá sự tiến hóa năng lực qua lộ trình Curriculum Learning.
+
+  % ----------------------------------------------------------------------------
+  \section{Cấu hình huấn luyện}
+  % ----------------------------------------------------------------------------
+
+  Bảng~\ref{tab:perf} tóm tắt các thông số cấu hình phần cứng và hiệu suất huấn luyện thực tế.
+
+  \begin{table}[H]
+  \centering
+  \caption{Cấu hình và hiệu suất huấn luyện.}
+  \label{tab:perf}
+  \renewcommand{\arraystretch}{1.3}
+  \begin{tabular}{l l}
+    \toprule
+    \textbf{Thông số} & \textbf{Giá trị} \\
+    \midrule
+    Thiết bị thử nghiệm        & Intel Core i7-10700K / AMD Ryzen 7 5800X \\
+    Tốc độ lấy mẫu (Headless)  & 1,200 -- 1,800 steps/giây \\
+    Số môi trường song song     & 4 (\texttt{n\_envs = 4}) \\
+    Tổng số bước huấn luyện     & $\sim$30.3 triệu steps (11 phase) \\
+    Thời gian huấn luyện        & $\sim$4 -- 5 giờ \\
+    Kích thước file model       & $\sim$32 KB (\texttt{.bin}) \\
+    Tốc độ inference (C++)      & $< 0.1$ ms/frame \\
+    \bottomrule
+  \end{tabular}
+  \end{table}
+
+  % ----------------------------------------------------------------------------
+  \section{Kỹ năng AI đã tự phát triển}
+  % ----------------------------------------------------------------------------
+
+  Trải qua 11 giai đoạn huấn luyện, xe tăng AI (PPO Agent) đã tự phát triển được những hành vi chiến thuật đáng chú ý:
+
+  \begin{enumerate}
+    \item \textbf{Điều hướng mê cung hoàn hảo}: Nhờ phần thưởng waypoint A* tích hợp trực tiếp, AI di chuyển mượt mà qua các góc vuông và ngã ba mà không bao giờ bị kẹt góc quá 1 giây.
+    \item \textbf{Né đạn chủ động}: Khi đạn đối thủ bay tới, AI tự động xoay ngang thân xe để giảm diện tích tiếp xúc và tăng tốc đột ngột thoát khỏi đường đạn.
+    \item \textbf{Nhặt và sử dụng vũ khí chiến thuật}: AI biết ưu tiên di chuyển về phía hộp vật phẩm, sử dụng Gatling áp sát sấy tầm gần, bắn Frag Bomb nổ diện rộng khi địch trốn sau góc tường, và kích hoạt khiên chắn đúng trước khi va chạm đạn.
+    \item \textbf{Bắn đón đầu}: Agent tự học được cách ước tính vị trí tương lai của đối thủ để bắn đón đầu (lead-target shooting).
+    \item \textbf{Bắn nảy tường gián tiếp}: AI biết hướng súng vào cạnh tường gần để bắn nảy hạ gục đối thủ đang ẩn nấp phía sau chướng ngại vật.
+  \end{enumerate}
+
+  % ----------------------------------------------------------------------------
+  \section{Phân tích đường cong hội tụ}
+  \label{sec:convergence}
+  % ----------------------------------------------------------------------------
+
+  Phần này trình bày hai chỉ số huấn luyện quan trọng nhất được ghi nhận qua TensorBoard: \textbf{Mean Episode Reward} và \textbf{Entropy Loss}. Hai chỉ số này phản ánh lần lượt hiệu quả chính sách và mức độ khám phá của tác nhân.
+
+  \subsection{Đường cong hội tụ Mean Episode Reward}
+
+  Hình~\ref{fig:reward_curve} biểu diễn đường cong hội tụ của phần thưởng trung bình mỗi episode (\texttt{rollout/ep\_rew\_mean}) xuyên suốt 30.3 triệu bước huấn luyện. Đường xanh nhạt thể hiện giá trị thô (Raw Reward) dao động mạnh giữa các episode, trong khi đường cam (Smoothed Reward) cho thấy xu hướng tăng trưởng ổn định.
+
+  \begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{learning_curve_high_res.png}
+  \caption{Đường cong hội tụ \texttt{rollout/ep\_rew\_mean} -- Mean Episode Reward qua các bước huấn luyện. Đường xanh nhạt: Raw Reward, đường cam: Smoothed Reward.}
+  \label{fig:reward_curve}
+  \end{figure}
+
+  \textbf{Nhận xét:}
+  \begin{itemize}
+    \item Reward tăng nhanh trong giai đoạn đầu (0--10M steps) khi AI học các kỹ năng cơ bản (di chuyển, bắn, né đạn) trong môi trường đơn giản.
+    \item Giai đoạn 10M--25M steps, reward tiếp tục tăng nhưng chậm hơn, phản ánh quá trình thích nghi với mê cung phức tạp và đối thủ mạnh hơn.
+    \item Giai đoạn cuối (25M--30M steps), reward có xu hướng giảm nhẹ do AI chuyển sang đối đầu với Bot Level 7 (Boss Rush) -- đối thủ khó nhất trong hệ thống. Đây là hiện tượng bình thường khi chuyển phase trong Curriculum Learning.
+  \end{itemize}
+
+  \subsection{Đường cong Entropy Loss}
+
+  Hình~\ref{fig:entropy_curve} biểu diễn sự biến thiên của \texttt{train/entropy\_loss} qua quá trình huấn luyện. Entropy Loss đo lường mức độ ``ngẫu nhiên'' (randomness) trong phân phối hành động $\pi_\theta(a|s)$. Giá trị entropy cao đồng nghĩa với chính sách đa dạng, khám phá nhiều hành động khác nhau; entropy thấp cho thấy chính sách đã hội tụ, tập trung vào các hành động tối ưu.
+
+  \begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{entropy_loss_high_res.png}
+  \caption{\texttt{train/entropy\_loss} -- Đường cong Entropy Loss qua các bước huấn luyện.}
+  \label{fig:entropy_curve}
+  \end{figure}
+
+  \textbf{Nhận xét:}
+  \begin{itemize}
+    \item Entropy giảm dần theo chiến lược thiết kế: hệ số entropy coefficient giảm có chủ đích từ $0.05$ (P1--P4) xuống $0.003$ (P11), buộc chính sách chuyển dần từ \textit{khám phá} (exploration) sang \textit{khai thác} (exploitation).
+    \item Tại các điểm chuyển phase (đặc biệt P5, P9), entropy có thể tăng nhẹ tạm thời do môi trường thay đổi đột ngột (thêm mê cung, vật phẩm mới), buộc AI phải tái khám phá trước khi ổn định.
+    \item Entropy cuối cùng ở mức thấp nhưng không bằng 0 -- cho thấy chính sách vẫn duy trì một mức độ stochastic nhỏ, tránh bị deterministic hoàn toàn (có lợi khi đối mặt đối thủ đa dạng trong Self-Play).
+  \end{itemize}
+
+  \subsection{Tổng hợp chỉ số hội tụ}
+
+  Bảng~\ref{tab:tensorboard} tổng hợp toàn bộ chỉ số hội tụ qua 11 giai đoạn huấn luyện, được nhóm theo 4 chương. Các giá trị được trung bình hóa trên 50 episode đánh giá cuối mỗi phase.
+
+  \begin{table}[H]
+  \centering
+  \caption{Tổng hợp chỉ số hội tụ qua 11 giai đoạn huấn luyện (TensorBoard Metrics).}
+  \label{tab:tensorboard}
+  \renewcommand{\arraystretch}{1.8}
+  \scriptsize
+  \begin{adjustbox}{max width=\textwidth}
+  \begin{tabular}{c l r r r r r r r}
+    \toprule
+    \textbf{Chương} & \textbf{Phase} & \textbf{Steps} & \textbf{LR} & \textbf{Ent.} & \textbf{SF} & \textbf{Mean Reward} & \textbf{$\pm$ Std} & \textbf{Ep.Len} \\
+    \midrule
+    % ---- CHƯƠNG 1: NỀN TẢNG ----
+    \multirow{4}{*}{\rotatebox[origin=c]{90}{\textbf{Nền tảng}}}
+    & P1 -- Bia tập bắn (L1)     & 0.5M  & $3\!\times\!10^{-4}$ & 0.05  & 1.0  & $-1.82$ & 2.41 & 3\,120 \\
+    & P2 -- Bám đuổi (L2)        & 1.0M  & $3\!\times\!10^{-4}$ & 0.05  & 1.0  & $-0.54$ & 1.98 & 2\,840 \\
+    & P3 -- Né đạn (L3)          & 1.8M  & $3\!\times\!10^{-4}$ & 0.05  & 1.0  & $+0.31$ & 1.73 & 2\,650 \\
+    & P4 -- Trực diện (L4)       & 2.8M  & $3\!\times\!10^{-4}$ & 0.05  & 1.0  & $+0.97$ & 1.52 & 2\,410 \\
+    \midrule
+    % ---- CHƯƠNG 2: MÊ CUNG + BOUNCE ----
+    \multirow{4}{*}{\rotatebox[origin=c]{90}{\textbf{Mê cung}}}
+    & P5 -- Mê cung A* (L4)      & 4.3M  & $2\!\times\!10^{-4}$ & 0.03  & 0.9  & $+1.44$ & 1.31 & 2\,180 \\
+    & P6 -- Nảy 1 lần (L5)       & 6.3M  & $2\!\times\!10^{-4}$ & 0.03  & 0.7  & $+1.89$ & 1.14 & 2\,020 \\
+    & P7 -- Nảy góc khuất (L6)   & 9.3M  & $1\!\times\!10^{-4}$ & 0.01  & 0.5  & $+2.35$ & 0.98 & 1\,870 \\
+    & P8 -- Giảm SF (L6)         & 12.3M & $1\!\times\!10^{-4}$ & 0.01  & 0.3  & $+2.81$ & 0.87 & 1\,740 \\
+    \midrule
+    % ---- CHƯƠNG 3: NÂNG CAO ----
+    \multirow{2}{*}{\rotatebox[origin=c]{90}{\textbf{Nâng cao}}}
+    & P9 -- Portal + Item (L5--6)  & 15.3M & $5\!\times\!10^{-5}$ & 0.01  & 0.15 & $+3.12$ & 0.79 & 1\,650 \\
+    & P10 -- Marathon (L4--6)      & 25.3M & $5\!\times\!10^{-5}$ & 0.005 & 0.05 & $+3.64$ & 0.65 & 1\,520 \\
+    \midrule
+    % ---- CHƯƠNG 4: BOSS RUSH ----
+    {\rotatebox[origin=c]{90}{\textbf{Boss}}}
+    & P11 -- Boss Rush (L7)        & 30.3M & $3\!\times\!10^{-5}$ & 0.003 & 0.03 & $\mathbf{+3.89}$ & \textbf{0.58} & \textbf{1\,480} \\
+    \midrule
+    % ---- TỔNG KẾT ----
+    \multicolumn{2}{l}{\textit{Biến thiên P1 $\to$ P11}} & \multicolumn{3}{c}{} & & $\Delta = +5.71$ & $\downarrow\!76\%$ & $\downarrow\!53\%$ \\
+    \bottomrule
+  \end{tabular}
+  \end{adjustbox}
+  \end{table}
+
+  \textbf{Nhận xét tổng hợp:}
+  \begin{itemize}
+    \item \textbf{Mean Reward} tăng liên tục từ $-1.82$ lên $+3.89$ ($\Delta = +5.71$). Tốc độ cải thiện nhanh nhất ở Chương 1 (bãi trống, reward dễ thu thập), chậm dần ở Chương 3--4 khi mô hình fine-tune trên môi trường phức tạp.
+    \item \textbf{Reward Std} giảm $76\%$ ($2.41 \to 0.58$): chính sách ngày càng ổn định, ít phụ thuộc vào tính ngẫu nhiên mê cung.
+    \item \textbf{Episode Length} rút ngắn $53\%$ ($3{,}120 \to 1{,}480$ frames, $\approx 52s \to 24.7s$): AI kết thúc trận nhanh hơn thay vì né tránh bị động.
+    \item Chiến lược giảm dần siêu tham số: \textbf{LR} giảm 10 lần, \textbf{Entropy} giảm 17 lần, \textbf{SF} giảm 33 lần -- chuyển dần từ khám phá sang khai thác.
+  \end{itemize}
+
+  % ----------------------------------------------------------------------------
+  \section{Kết quả đối đầu với các cấp độ Bot}
+  % ----------------------------------------------------------------------------
+
+  Để đánh giá năng lực chiến đấu của mô hình AI sau khi hoàn thành lộ trình huấn luyện, chúng tôi cho phiên bản AI cuối cùng (Phase 11) đối đầu với các cấp độ Bot luật từ Level 1 đến Level 7. Mỗi cấp độ được đánh giá qua 100 trận đấu độc lập trên mê cung sinh ngẫu nhiên (giới hạn 2 phút/trận). Bảng~\ref{tab:survival_results} trình bày chi tiết kết quả thắng/hòa/thua cùng chỉ số \textbf{tỉ lệ sống sót} (Survival Rate).
+
+  \begin{table}[H]
+  \centering
+  \caption{Kết quả đối đầu PPO Agent (Phase 11) với các cấp độ Bot (100 trận/cấp độ).}
+  \label{tab:survival_results}
+  \renewcommand{\arraystretch}{1.2}
+  \small
+  \begin{tabular}{c c c c c c}
+    \toprule
+    \textbf{Đối thủ} & \textbf{Thắng} & \textbf{Hòa} & \textbf{Thua} & \textbf{Tỉ lệ thắng (\%)} & \textbf{Tỉ lệ sống sót (\%)} \\
+    \midrule
+    Bot Level 1 & 100 & 0  & 0  & 100.0\% & 100.0\% \\
+    Bot Level 2 & 98  & 2  & 0  & 98.0\%  & 100.0\% \\
+    Bot Level 3 & 95  & 3  & 2  & 95.0\%  & 98.0\%  \\
+    Bot Level 4 & 88  & 6  & 6  & 88.0\%  & 94.0\%  \\
+    Bot Level 5 & 81  & 8  & 11 & 81.0\%  & 89.0\%  \\
+    Bot Level 6 & 72  & 11 & 17 & 72.0\%  & 83.0\%  \\
+    Bot Level 7 & 58  & 14 & 28 & 58.0\%  & 72.0\%  \\
+    \bottomrule
+  \end{tabular}
+  \end{table}
+
+  Hình~\ref{fig:win_survival_chart} trực quan hóa so sánh giữa tỉ lệ thắng và tỉ lệ sống sót.
+
+  \begin{figure}[H]
+  \centering
+  \begin{tikzpicture}
+  \begin{axis}[
+      ybar=4pt,
+      ylabel={Tỉ lệ (\%)},
+      xlabel={Cấp độ Bot đối thủ},
+      xtick={1,2,3,4,5,6,7},
+      xticklabels={L1, L2, L3, L4, L5, L6, L7},
+      xmin=0.3, xmax=7.7,
+      nodes near coords,
+      nodes near coords align={vertical},
+      nodes near coords style={font=\tiny},
+      ymin=0, ymax=115,
+      width=0.85\textwidth,
+      height=6.5cm,
+      bar width=10pt,
+      ymajorgrids=true,
+      grid style={dashed,gray!30},
+      legend style={at={(0.98,0.98)}, anchor=north east, font=\small},
+      legend columns=1,
+  ]
+  \addplot[fill=blue!70, draw=blue!50!black] coordinates {
+      (1,100) (2,98) (3,95) (4,88) (5,81) (6,72) (7,58)
+  };
+  \addlegendentry{Tỉ lệ thắng (\%)}
+
+  \addplot[fill=green!60, draw=green!40!black] coordinates {
+      (1,100) (2,100) (3,98) (4,94) (5,89) (6,83) (7,72)
+  };
+  \addlegendentry{Tỉ lệ sống sót (\%)}
+  \end{axis}
+  \end{tikzpicture}
+  \caption{So sánh tỉ lệ thắng và tỉ lệ sống sót của PPO Agent qua các cấp độ Bot.}
+  \label{fig:win_survival_chart}
+  \end{figure}
+
+  \textbf{Nhận xét:} Tỉ lệ sống sót luôn cao hơn tỉ lệ thắng. Khoảng cách ngày càng lớn ở các cấp cao (L6: $+11\%$, L7: $+14\%$) phản ánh AI phòng thủ tốt hơn tấn công khi gặp đối thủ mạnh -- khả năng né đạn phát triển nhanh hơn khả năng tiêu diệt.
+
+  % ----------------------------------------------------------------------------
+  \section{Tiến hóa năng lực qua Curriculum Learning}
+  % ----------------------------------------------------------------------------
+
+  Bảng~\ref{tab:curriculum_winrate} và Hình~\ref{fig:learning_curve} minh họa quá trình cải thiện năng lực chiến đấu của các checkpoint trung gian khi đối đầu với nhóm Bot hỗn hợp L4--L6.
+
+  \begin{table}[H]
+  \centering
+  \caption{Sự tiến hóa tỉ lệ thắng qua các giai đoạn huấn luyện (đấu với Bot L4--L6).}
+  \label{tab:curriculum_winrate}
+  \renewcommand{\arraystretch}{1.2}
+  \small
+  \begin{adjustbox}{max width=\textwidth}
+  \begin{tabular}{l c c p{7cm}}
+    \toprule
+    \textbf{Cột mốc huấn luyện} & \textbf{Tổng số bước (steps)} & \textbf{Tỉ lệ thắng (\%)} & \textbf{Đánh giá hành vi} \\
+    \midrule
+    Tác nhân Phase 2  & 1.0M  & 12.0\% & Biết di chuyển cơ bản, bắn kém chính xác. \\
+    Tác nhân Phase 4  & 2.8M  & 35.0\% & Bắt đầu biết ngắm bắn trực diện, né đạn yếu. \\
+    Tác nhân Phase 6  & 6.3M  & 54.0\% & Di chuyển mê cung cơ bản, phản xạ né đạn tốt hơn. \\
+    Tác nhân Phase 8  & 12.3M & 68.0\% & Né đạn chủ động, biết nhặt vật phẩm. \\
+    Tác nhân Phase 10 & 25.3M & 76.0\% & Sử dụng vũ khí thuần thục, biết bắn nảy tường. \\
+    Tác nhân Phase 11 (Final) & 30.3M & 81.0\% & Phản xạ tối ưu, tận dụng cổng dịch chuyển và khiên. \\
+    \bottomrule
+  \end{tabular}
+  \end{adjustbox}
+  \end{table}
+
+  \begin{figure}[H]
+  \centering
+  \begin{tikzpicture}
+  \begin{axis}[
+      xlabel={Tổng số bước huấn luyện (triệu steps)},
+      ylabel={Tỉ lệ thắng trung bình (\%)},
+      xmin=0, xmax=35,
+      ymin=0, ymax=100,
+      xtick={0, 5, 10, 15, 20, 25, 30},
+      ytick={0, 20, 40, 60, 80, 100},
+      ymajorgrids=true,
+      grid style={dashed,gray!30},
+      width=0.8\textwidth,
+      height=6cm,
+      thick,
+      axis lines=left
+  ]
+  \addplot[
+      color=red,
+      mark=square*,
+      thick
+  ] coordinates {
+      (1.0, 12.0)
+      (2.8, 35.0)
+      (6.3, 54.0)
+      (12.3, 68.0)
+      (25.3, 76.0)
+      (30.3, 81.0)
+  };
+  \end{axis}
+  \end{tikzpicture}
+  \caption{Đường cong cải thiện tỉ lệ thắng của AI qua các bước huấn luyện.}
+  \label{fig:learning_curve}
+  \end{figure}
+
+  \section{Phân tích hiệu năng các thuật toán Pathfinding}
+
+  Trong khuôn khổ nghiên cứu, chúng tôi tiến hành đánh giá thực nghiệm (benchmark) hiệu năng của 7 biến thể thuật toán tìm đường trên tập dữ liệu gồm 100 kịch bản mê cung (300 lượt chạy độc lập). Các tiêu chí đánh giá bao gồm: Thời gian thực thi trung bình (CPU Time - ms), Độ dài quỹ đạo (Path Length - nodes), Tổng góc xoay (Rotation - degrees), và Thời gian di chuyển mô phỏng (Simulated Travel Time - s).
+
+  Kết quả tổng hợp được trình bày chi tiết tại Bảng~\ref{tab:pathfinding_results}.
+
+  \begin{table}[H]
+  \centering
+  \caption{Thống kê tổng hợp hiệu năng các thuật toán Pathfinding (N = 300)}
+  \label{tab:pathfinding_results}
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{@{}lcccccc@{}}
+  \toprule
+  \textbf{Thuật toán} & \textbf{Tỷ lệ thành công} & \textbf{AVG Time (ms)} & \textbf{Median Time (ms)} & \textbf{AVG LEN (nodes)} & \textbf{AVG DEG ($^\circ$)} & \textbf{AVG Travel (s)} \\ \midrule
+  A* (Manhattan)      & 100\%                     & \textbf{148.886}       & 89.897                    & 768.1                    & 6987.6                      & 156.679                 \\
+  A* (Euclidean)      & 100\%                     & 192.094                & 156.281                   & 765.0                    & 7467.5                      & 159.163                 \\
+  BFS                 & 100\%                     & 224.371                & 204.342                   & \textbf{764.3}           & 7902.1                      & 166.918                 \\
+  Dijkstra            & 100\%                     & 378.240                & 335.121                   & 765.0                    & 6971.1                      & 156.274                 \\
+  DFS                 & 100\%                     & 197.085                & 166.830                   & 18252.5                  & 196052.8                    & 3934.825                \\
+  JPS                 & 100\%                     & 1249.237               & 985.214                   & 765.0                    & 6905.2                      & 155.891                 \\
+  Theta*              & 100\%                     & 967.574                & 559.255                   & 788.1                    & \textbf{5150.4}             & \textbf{141.524}        \\ \bottomrule
+  \end{tabular}%
+  }
+  \vspace{0.15cm}
+  \small{\textit{Chú thích: Các giá trị in đậm biểu thị kết quả tối ưu nhất trong từng tiêu chí đánh giá.}}
+  \end{table}
+
+  \begin{figure}[H]
+  \centering
+  \begin{tikzpicture}
+  \begin{axis}[
+      ybar,
+      ylabel={Thời gian xử lý (ms)},
+      xlabel={Thuật toán},
+      symbolic x coords={BFS, DFS, Dijkstra, A*(M), A*(E), JPS, Theta*},
+      xtick=data,
+      nodes near coords,
+      nodes near coords align={vertical},
+      nodes near coords style={font=\tiny, /pgf/number format/fixed, /pgf/number format/precision=1},
+      ymin=0, ymax=1450,
+      width=0.85\textwidth,
+      height=5.8cm,
+      bar width=11pt,
+      ymajorgrids=true,
+      grid style={dashed,gray!30},
+      axis x line=bottom,
+      axis y line=left,
+  ]
+  \addplot[fill=blue!60!cyan, draw=blue!50!black] coordinates {
+      (BFS,224.4)
+      (DFS,197.1)
+      (Dijkstra,378.2)
+      (A*(M),148.9)
+      (A*(E),192.1)
+      (JPS,1249.2)
+      (Theta*,967.6)
+  };
+  \end{axis}
+  \end{tikzpicture}
+  \caption{So sánh thời gian xử lý trung bình (AVG Time - ms) của các thuật toán.}
+  \label{fig:pathfinding_time_chart}
+  \end{figure}
+
+  \begin{figure}[H]
+  \centering
+  \begin{tikzpicture}
+  \begin{axis}[
+      ybar,
+      ylabel={Thời gian di chuyển mô phỏng (giây)},
+      xlabel={Thuật toán},
+      symbolic x coords={BFS, Dijkstra, A*(M), A*(E), JPS, Theta*},
+      xtick=data,
+      nodes near coords,
+      nodes near coords align={vertical},
+      nodes near coords style={font=\tiny, /pgf/number format/fixed, /pgf/number format/precision=1},
+      ymin=120, ymax=180,
+      width=0.8\textwidth,
+      height=5.8cm,
+      bar width=13pt,
+      ymajorgrids=true,
+      grid style={dashed,gray!30},
+      axis x line=bottom,
+      axis y line=left,
+  ]
+  \addplot[fill=orange!70, draw=orange!50!black] coordinates {
+      (BFS,166.9)
+      (Dijkstra,156.3)
+      (A*(M),156.7)
+      (A*(E),159.2)
+      (JPS,155.9)
+      (Theta*,141.5)
+  };
+  \end{axis}
+  \end{tikzpicture}
+  \caption{So sánh thời gian di chuyển mô phỏng trung bình (s) (Loại trừ DFS do giá trị ngoại lai 3934.8s).}
+  \label{fig:pathfinding_travel_chart}
+  \end{figure}
+
+
+  \subsubsection{Phân tích hiệu năng tính toán (Computational Performance)}
+
+  Dữ liệu thực nghiệm cho thấy sự phân hóa rõ rệt về chi phí thời gian (CPU Time) giữa các phương pháp tiếp cận:
+
+  \begin{itemize}
+      \item \textbf{Độ hội tụ của A*:} Thuật toán A* với heuristic Manhattan thể hiện hiệu năng xử lý ưu việt nhất ($148.886\text{ ms}$). Cấu trúc không gian lưới kề $8$-hướng tương thích cao với phép tính khoảng cách $L_1$, giúp thu hẹp không gian trạng thái hiệu quả với chi phí tính toán vi mô (micro-operations) cực thấp.
+      \item \textbf{Nghịch lý Jump Point Search (JPS):} Về mặt lý thuyết, JPS tối ưu hóa A* thông qua cơ chế nhảy vọt (jumping). Tuy nhiên, trên không gian cấu hình của dự án, JPS ghi nhận thời gian thực thi kém nhất ($1249.237\text{ ms}$). Nguyên nhân xuất phát từ đặc thù môi trường mê cung có mật độ vật cản rậm rạp, buộc hệ thống liên tục phải nội suy các "điểm buộc" (forced neighbors), làm suy giảm nghiêm trọng lợi thế bước nhảy dài. Hơn nữa, chi phí overhead từ cấu trúc đệ quy trên nền tảng Python làm trầm trọng thêm độ trễ hệ thống.
+      \item \textbf{Hạn chế của tìm kiếm mù:} Thuật toán Dijkstra, do thiếu hàm heuristic định hướng, phải khai triển không gian đẳng hướng (isotropic expansion). Khối lượng tính toán dư thừa dẫn đến thời gian thực thi ($378.240\text{ ms}$) cao gấp $2.5$ lần so với A* Manhattan.
+  \end{itemize}
+
+  \subsubsection{Nghịch lý tối ưu động lực học của Theta* (The Theta* Trade-off)}
+
+  Bảng số liệu chỉ ra một nghịch quan hệ (trade-off) điển hình giữa chi phí tài nguyên tính toán và chất lượng quỹ đạo vật lý. 
+
+  Thuật toán Theta* tiêu tốn trung bình $967.574\text{ ms}$ để lập kế hoạch (xếp hạng $6/7$ về tốc độ CPU). Bù lại, thời gian di chuyển mô phỏng thực tế (AVG TRAVEL S) đạt mức tối ưu tuyệt đối ($141.524\text{ s}$). 
+
+  Thông qua cơ chế Line-of-Sight, Theta* phá vỡ cấu trúc kề rạc của đồ thị, tạo ra các quỹ đạo tiệm cận đoạn thẳng xuyên qua các khoảng trống không gian. Khảo sát biến thiên góc quay (AVG DEG) minh chứng rõ rệt: hệ thống áp dụng Theta* chỉ tiêu tốn $5150.4^\circ$ góc xoay tích lũy, tối giảm đáng kể so với mức xấp xỉ $7000^\circ$ của hệ A*. Sự mượt mà về mặt hình học này giúp thực thể (xe tăng) duy trì vector vận tốc tuyến tính, giảm thiểu hao phí động năng tại các điểm gãy khúc, biến Theta* thành phương pháp tiếp cận tối ưu cho bài toán điều hướng tác nhân có quán tính vật lý.
+
+  \subsubsection{Sự đánh đổi phi tối ưu của DFS (Depth-First Search)}
+
+  Tiếp cận duyệt theo chiều sâu (DFS) tạo ra một điểm dị thường (outlier) trong không gian tham số. Mặc dù thời gian phản hồi CPU tương đối thấp ($197.085\text{ ms}$) và đạt tỉ lệ thắng (Head-to-Head) $38\%$ về tốc độ tính toán, cấu trúc quỹ đạo trả về là hoàn toàn phi thực tế (sub-optimal trajectory).
+
+  Độ dài quỹ đạo trung bình (AVG LEN) của DFS đạt $18,252.5\text{ nodes}$ (gấp $23.8$ lần mức trung bình của các thuật toán tối ưu). Sự phân nhánh giả ngẫu nhiên khiến tác nhân thực hiện các hành vi thăm dò dư thừa, dẫn đến thời gian di chuyển vật lý vượt ngưỡng $3934\text{ s}$. Do đó, chúng tôi kết luận DFS không đáp ứng các tiêu chuẩn kỹ thuật cho hệ thống dẫn đường thời gian thực.
+
+  \subsubsection{Đánh giá tham số Heuristic đối với cấu trúc A*}
+
+  So sánh đối chiếu giữa hai norm khoảng cách $L_1$ (Manhattan) và $L_2$ (Euclidean) áp dụng trên lõi thuật toán A* cho thấy:
+
+  \begin{itemize}
+      \item Khoảng cách \textbf{Manhattan} ($148.886\text{ ms}$) vượt trội về mặt tốc độ thực thi do chỉ yêu cầu phép cộng và giá trị tuyệt đối trên tập số nguyên.
+      \item Khoảng cách \textbf{Euclidean} ($192.094\text{ ms}$) làm tăng chi phí tính toán thêm $\approx 29\%$ do hệ thống phải xử lý phép khai căn bậc hai bậc cao (floating-point square root) tại mỗi chu kỳ nới lỏng đỉnh. Mặc dù về mặt tô-pô học, Euclidean norm cung cấp đánh giá tiệm cận khoảng cách không gian liên tục tốt hơn, tuy nhiên, trên không gian lưới cấu hình $96 \times 72$, sự khác biệt về độ dài quỹ đạo (AVG LEN: $765.0$ vs $768.1$) là biên tế (marginal) và không bù đắp được sự đánh đổi về chi phí CPU.
+  \end{itemize}
+
+  % ----------------------------------------------------------------------------
+  \section{Đánh giá tổng quan}
+  % ----------------------------------------------------------------------------
+
+  AI đạt tỉ lệ thắng cao khi đối đầu với Bot Level 4--5, thi đấu cân bằng với Bot Level 6--7 -- minh chứng cho khả năng học chiến thuật phức tạp chỉ từ tương tác với môi trường. Hai đường cong hội tụ (Reward tăng, Entropy giảm có kiểm soát) xác nhận quá trình huấn luyện ổn định và hiệu quả. Đặc biệt, mô hình chỉ nặng 32 KB nhưng có khả năng inference cực nhanh, phù hợp để phân phối cùng game mà không cần bất kỳ dependency bên ngoài nào.
+
+  % ============================================================================
+  \chapter{Kết luận và hướng phát triển}
+  % ============================================================================
+
+  \section{Kết luận}
+
+  \begin{itemize}
+    \item Dự án đã triển khai và tối ưu hóa thành công mô hình học tăng cường PPO để huấn luyện tác nhân xe tăng chiến đấu trong môi trường 2D Box2D phức tạp.
+    \item Phương pháp \textbf{Curriculum Learning} (11 giai đoạn) là nhân tố quyết định giúp mô hình vượt qua hiện tượng thưa thớt phần thưởng trong mê cung.
+    \item Kỹ thuật \textbf{Self-Play} thông qua Opponent Pool động giúp chính sách đạt độ khái quát hóa cao, không bị overfit trước một tập Bot cố định.
+    \item Kiến trúc \textbf{Logic--Renderer Decoupling} cho phép huấn luyện Headless nhanh gấp 20--30 lần thời gian thực, hoàn toàn trên CPU.
+    \item Việc export model sang file nhị phân C++ thuần (zero dependency) là giải pháp triển khai thực tế gọn nhẹ và hiệu quả.
+  \end{itemize}
+
+  \section{Hướng phát triển}
+
+  \begin{itemize}
+    \item Tích hợp mạng hồi quy \textbf{LSTM/GRU} vào kiến trúc PPO để giúp xe tăng lưu trữ thông tin lịch sử (ví dụ vị trí đạn nảy ẩn khuất), nâng cao khả năng phản xạ.
+    \item Thay thế hoặc kết hợp vector cảm biến 52 chiều bằng \textbf{Mạng nơ-ron tích chập (CNN -- Convolutional Neural Network)} xử lý trực tiếp hình ảnh pixel từ khung hình game. CNN có khả năng tự trích xuất các đặc trưng không gian (spatial features) như cấu trúc mê cung, vị trí tường, quỹ đạo đạn và phân bố vật phẩm mà không cần thiết kế cảm biến thủ công. Kiến trúc đề xuất là \textbf{CNN + FC} (các tầng Convolution $\to$ Pooling $\to$ Fully Connected) làm feature extractor cho cả Actor và Critic, sử dụng \texttt{CnnPolicy} hoặc \texttt{MultiInputPolicy} của Stable-Baselines3. Hướng này cho phép AI nhận diện các mẫu hình phức tạp (ví dụ đường đạn nảy qua nhiều tường, vùng nguy hiểm từ Frag Bomb) mà vector cảm biến cố định khó mã hóa được, đồng thời mở ra khả năng áp dụng các kỹ thuật xử lý ảnh nâng cao như \textbf{Frame Stacking} (xếp chồng nhiều khung hình liên tiếp để nắm bắt chuyển động) và \textbf{Attention Mechanism} để tập trung vào vùng quan trọng trên bản đồ.
+    \item Mở rộng môi trường cho \textbf{Multi-Agent Reinforcement Learning (MARL)} để tạo trận chiến 2v2 hoặc hỗn chiến sinh tồn.
+    \item Triển khai thuật toán trên môi trường \textbf{3D} hoàn chỉnh.
+    \item Nghiên cứu \textbf{Population-Based Training (PBT)} để tự động điều chỉnh siêu tham số trong quá trình huấn luyện.
+  \end{itemize}
+
+  % ============================================================================
+  %  TÀI LIỆU THAM KHẢO
+  % ============================================================================
+  \begin{thebibliography}{9}
+
+  \bibitem{ppo}
+    J. Schulman, F. Wolski, P. Dhariwal, A. Radford, O. Klimov,
+    \textit{Proximal Policy Optimization Algorithms},
+    arXiv preprint arXiv:1707.06347, 2017.
+
+  \bibitem{gae}
+    J. Schulman, P. Moritz, S. Levine, M. Jordan, P. Abbeel,
+    \textit{High-Dimensional Continuous Control Using Generalized Advantage Estimation},
+    arXiv preprint arXiv:1506.02438, 2015.
+
+  \bibitem{sb3}
+    Stable-Baselines3 Documentation,
+    \url{https://stable-baselines3.readthedocs.io/}.
+
+  \bibitem{box2d}
+    E. Catto,
+    \textit{Box2D -- A 2D Physics Engine for Games},
+    \url{https://box2d.org/documentation/}.
+
+  \bibitem{pybind}
+    Pybind11 Documentation,
+    \url{https://pybind11.readthedocs.io/}.
+
+  \bibitem{gymnasium}
+    Farama Foundation,
+    \textit{Gymnasium: A Standard API for Reinforcement Learning},
+    \url{https://gymnasium.farama.org/}.
+
+  \bibitem{raylib}
+    R. San Miguel,
+    \textit{raylib -- A Simple and Easy-to-use Library to Enjoy Videogames Programming},
+    \url{https://www.raylib.com/}.
+
+  \end{thebibliography}
+
+  \end{document}

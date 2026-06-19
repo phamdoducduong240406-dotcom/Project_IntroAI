@@ -1,0 +1,991 @@
+% ============================================================================
+%  BÁO CÁO DỰ ÁN: HUẤN LUYỆN AI XE TĂNG ĐỐI KHÁNG (AZ TANK GAME)
+%  Môn học: IT3160 - Giới thiệu Trí tuệ nhân tạo
+%  Template: HUST - Đại học Bách khoa Hà Nội (Unofficial)
+%  Tối ưu compile time cho Overleaf Free Plan
+% ============================================================================
+\documentclass[aspectratio=169, 11pt]{beamer}
+
+% --- Gói ngôn ngữ tiếng Việt ---
+\usepackage[utf8]{inputenc}
+\usepackage[vietnamese]{babel}
+\usepackage{amsmath, amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepackage{fontawesome5}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{adjustbox}
+\usepackage{colortbl}
+
+\usetikzlibrary{positioning, arrows.meta}
+
+% ============================================================================
+%  HUST COLOR PALETTE
+% ============================================================================
+\definecolor{hustred}{HTML}{CF1628}
+\definecolor{hustreddark}{HTML}{A01020}
+\definecolor{hustredlight}{HTML}{E84353}
+\definecolor{hustyellow}{HTML}{F3C108}
+\definecolor{hustyellowlight}{HTML}{F7D96A}
+\definecolor{hustblack}{HTML}{231F20}
+\definecolor{hustgray}{HTML}{4A4A4A}
+\definecolor{hustlightgray}{HTML}{F0F0F2}
+\definecolor{hustwhite}{HTML}{FFFFFF}
+\definecolor{hustblue}{HTML}{1A5276}
+\definecolor{hustgreen}{HTML}{1E8449}
+
+% ============================================================================
+%  BEAMER THEME SETUP
+% ============================================================================
+\usetheme{default}
+\usecolortheme{default}
+\usefonttheme{professionalfonts}
+
+\setbeamerfont{title}{series=\bfseries, size=\Large}
+\setbeamerfont{frametitle}{series=\bfseries, size=\large}
+\setbeamerfont{block title}{series=\bfseries, size=\normalsize}
+
+% --- Colors ---
+\setbeamercolor{structure}{fg=hustred}
+\setbeamercolor{normal text}{fg=hustblack, bg=hustwhite}
+\setbeamercolor{alerted text}{fg=hustred}
+\setbeamercolor{example text}{fg=hustgreen}
+\setbeamercolor{frametitle}{fg=hustwhite, bg=hustred}
+\setbeamercolor{block title}{bg=hustred, fg=hustwhite}
+\setbeamercolor{block body}{bg=hustlightgray, fg=hustblack}
+\setbeamercolor{block title alerted}{bg=hustreddark, fg=hustwhite}
+\setbeamercolor{block body alerted}{bg=hustlightgray, fg=hustblack}
+\setbeamercolor{block title example}{bg=hustgreen, fg=hustwhite}
+\setbeamercolor{block body example}{bg=hustlightgray, fg=hustblack}
+\setbeamercolor{item}{fg=hustred}
+\setbeamercolor{subitem}{fg=hustredlight}
+\setbeamercolor{subsubitem}{fg=hustyellow}
+\setbeamercolor{section in toc}{fg=hustred}
+
+% Itemize markers
+\setbeamertemplate{itemize item}{\color{hustred}\scriptsize$\blacksquare$}
+\setbeamertemplate{itemize subitem}{\color{hustredlight}\scriptsize$\blacktriangleright$}
+\setbeamertemplate{itemize subsubitem}{\color{hustyellow}\scriptsize$\diamond$}
+\setbeamertemplate{section in toc}[square]
+\setbeamertemplate{navigation symbols}{}
+
+% ============================================================================
+%  FRAMETITLE (No TikZ - uses \rule for yellow stripe)
+% ============================================================================
+\setbeamertemplate{frametitle}{%
+  \nointerlineskip%
+  \begin{beamercolorbox}[wd=\paperwidth, ht=2.8ex, dp=1.2ex, leftskip=1.2em, rightskip=1.2em]{frametitle}%
+    \usebeamerfont{frametitle}\insertframetitle%
+    \hfill%
+    {\scriptsize\color{hustyellow}\insertframesubtitle}%
+  \end{beamercolorbox}%
+  \nointerlineskip%
+  {\color{hustyellow}\rule{\paperwidth}{0.08cm}}%
+  \vspace{0.08cm}%
+}
+
+% ============================================================================
+%  FOOTLINE (No TikZ - uses \rule for yellow stripe)
+% ============================================================================
+\setbeamertemplate{footline}{%
+  \leavevmode%
+  {\color{hustyellow}\rule{\paperwidth}{0.06cm}}%
+  \hbox{%
+    \begin{beamercolorbox}[wd=.3\paperwidth, ht=2.5ex, dp=1.1ex, leftskip=1em]{author in head/foot}%
+      {\tiny\color{hustgray}\insertshortauthor}%
+    \end{beamercolorbox}%
+    \begin{beamercolorbox}[wd=.4\paperwidth, ht=2.5ex, dp=1.1ex, center]{title in head/foot}%
+      {\tiny\color{hustgray}\insertshorttitle}%
+    \end{beamercolorbox}%
+    \begin{beamercolorbox}[wd=.3\paperwidth, ht=2.5ex, dp=1.1ex, rightskip=1em]{date in head/foot}%
+      \hfill{\tiny\color{hustred}\textbf{\insertframenumber\,/\,\inserttotalframenumber}}%
+    \end{beamercolorbox}%
+  }%
+  \vskip0pt%
+}
+
+% ============================================================================
+%  CODE LISTING STYLE
+% ============================================================================
+\lstset{
+  basicstyle=\ttfamily\scriptsize,
+  keywordstyle=\color{hustred}\bfseries,
+  commentstyle=\color{hustgray},
+  stringstyle=\color{hustgreen},
+  breaklines=true,
+  frame=single,
+  rulecolor=\color{hustlightgray},
+  backgroundcolor=\color{hustlightgray},
+}
+
+% ============================================================================
+%  THÔNG TIN BÌA
+% ============================================================================
+\title[AZ Tank Game -- AI]{Huấn Luyện AI Xe Tăng Đối Kháng}
+\author[Nhóm SV -- HUST]{Phạm Đỗ Đức Dương \and Cao Thanh Hùng}
+\institute[HUST]{Đại học Bách khoa Hà Nội}
+\date{\today}
+
+% ============================================================================
+\begin{document}
+
+% ============================================================================
+\section{Tổng quan và Đặt vấn đề}
+% ============================================================================
+
+% --- Slide 1: Trang bìa HUST ---
+\begin{frame}[plain, noframenumbering]
+  \begin{tikzpicture}[remember picture, overlay]
+    % Header đỏ
+    \fill[hustred] (current page.north west) rectangle ([yshift=-1.5cm]current page.north east);
+    \fill[hustyellow] ([yshift=-1.5cm]current page.north west) rectangle ([yshift=-1.68cm]current page.north east);
+    % Tên trường
+    \node[text=hustwhite, font=\fontsize{10pt}{12pt}\selectfont\bfseries] at ([yshift=-0.45cm]current page.north) {ĐẠI HỌC BÁCH KHOA HÀ NỘI};
+    \node[text=hustyellowlight, font=\fontsize{7pt}{9pt}\selectfont] at ([yshift=-0.9cm]current page.north) {HANOI UNIVERSITY OF SCIENCE AND TECHNOLOGY};
+    % Footer đỏ
+    \fill[hustred] (current page.south west) rectangle ([yshift=0.55cm]current page.south east);
+    \fill[hustyellow] ([yshift=0.55cm]current page.south west) rectangle ([yshift=0.7cm]current page.south east);
+    \node[text=hustwhite, font=\fontsize{5pt}{6pt}\selectfont] at ([yshift=0.2cm]current page.south) {SỐ 1 ĐẠI CỒ VIỆT, HAI BÀ TRƯNG, HÀ NỘI};
+  \end{tikzpicture}
+
+  \vspace{1.2cm}
+  \begin{center}
+    {\color{hustgray}\textit{Môn học: IT3160 -- Giới thiệu Trí tuệ nhân tạo}}
+
+    \vspace{0.2cm}
+    {\color{hustred}\rule{0.7\paperwidth}{1.2pt}}\\
+    {\color{hustyellow}\rule{0.5\paperwidth}{0.6pt}}
+
+    \vspace{0.4cm}
+    {\color{hustred}\LARGE\bfseries \faGamepad~Huấn Luyện AI Xe Tăng Đối Kháng}
+
+    \vspace{0.2cm}
+    {\color{hustblack}\large Bằng Phương Pháp Học Tăng Cường (PPO)\\trong game đối kháng AZ Tank 2D}
+
+    \vspace{0.3cm}
+    {\color{hustyellow}\rule{0.4\paperwidth}{0.6pt}}
+
+    \vspace{0.3cm}
+    {\color{hustblack}\small\textbf{Nhóm sinh viên thực hiện:}\\[3pt]
+    Phạm Đỗ Đức Dương (202416466) \quad$\bullet$\quad Cao Thanh Hùng (202416502)}
+
+    \vspace{0.3cm}
+    {\color{hustgray}\small\textbf{Giảng viên hướng dẫn:} PGS.TS Lê Thanh Hương}
+
+    \vspace{0.3cm}
+    {\color{hustgray}\small \today}
+  \end{center}
+\end{frame}
+
+% --- Slide 2: Cấu trúc bài thuyết trình ---
+\begin{frame}{Cấu trúc bài thuyết trình}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \begin{block}{\faListOl~Phần I: Tổng quan và Đặt vấn đề}
+        \begin{itemize}
+          \item Lý do chọn đề tài \& Mục tiêu cốt lõi.
+          \item Giới thiệu môi trường trò chơi AZ Tank 2D.
+        \end{itemize}
+      \end{block}
+      \vspace{0.3em}
+      \begin{block}{\faCogs~Phần II: Thiết kế Hệ thống RL}
+        \begin{itemize}
+          \item Kiến trúc tổng thể \& Nguyên lý Decoupling.
+          \item Không gian quan sát (52D) \& Hành động.
+          \item Thiết kế phần thưởng (Reward Shaping).
+        \end{itemize}
+      \end{block}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{block}{\faBrain~Phần III: Cơ sở Thuật toán}
+        \begin{itemize}
+          \item Mạng nơ-ron MLP Policy \& PPO/GAE.
+          \item Rời rạc hóa đồ thị \& Pathfinding (A*, Theta*).
+        \end{itemize}
+      \end{block}
+      \vspace{0.3em}
+      \begin{block}{\faChartLine~Phần IV \& V: Huấn luyện \& Thực nghiệm}
+        \begin{itemize}
+          \item Curriculum Learning \& Self-Play.
+          \item Triển khai C++ Inference.
+          \item Kết quả thực nghiệm, so sánh \& Hướng đi tương lai.
+        \end{itemize}
+      \end{block}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% --- Slide 3: Lý do chọn đề tài ---
+\begin{frame}{Lý do chọn đề tài}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \begin{block}{\faGamepad~Tính chất trò chơi đối kháng}
+        Game đối kháng xe tăng 2D thời gian thực đòi hỏi khả năng ra quyết định tốc độ cao để bắn hạ đối thủ và sinh tồn.
+      \end{block}
+      \vspace{0.3em}
+      \begin{alertblock}{\faExclamationTriangle~Hạn chế của Bot truyền thống}
+        Bot rule-based truyền thống có cấu trúc cực kỳ cồng kềnh, dễ bị bắt bài và hoàn toàn thiếu tính linh hoạt khi địa hình thay đổi.
+      \end{alertblock}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{exampleblock}{\faLightbulb~Giải pháp ứng dụng AI}
+        Áp dụng học tăng cường \textbf{PPO (Proximal Policy Optimization)} để Agent tự học các hành vi chiến thuật từ con số 0 thông qua tương tác liên tục với môi trường game.
+      \end{exampleblock}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% --- Slide 4: Mục tiêu cốt lõi ---
+\begin{frame}{Mục tiêu cốt lõi}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \begin{block}{\faFlask~Giải quyết bài toán học máy}
+        Giải quyết triệt để bài toán phần thưởng thưa thớt (sparse rewards) trong không gian mê cung ngẫu nhiên phức tạp bằng các phương pháp dẫn đường và định hình reward.
+      \end{block}
+      \vspace{0.3em}
+      \begin{block}{\faLink~Tích hợp hệ thống tối ưu}
+        Tích hợp thành công lõi vật lý game viết bằng C++/Box2D với môi trường Gymnasium (Python) thông qua thư viện liên kết \textbf{Pybind11} tốc độ cao.
+      \end{block}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{exampleblock}{\faRocket~Triển khai Release thực tế}
+        Triển khai thành công mô hình chạy inference AI thuần C++ (chạy forward pass) không phụ thuộc vào bất kỳ thư viện Python nào khi release game.
+      \end{exampleblock}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% --- Slide 5: Môi trường AZ Tank 2D ---
+\begin{frame}{Môi trường AZ Tank 2D}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \begin{block}{\faCubes~Đặc điểm mô phỏng}
+        \begin{itemize}
+          \item Mô phỏng vật lý Box2D chạy ở tần số cố định \textbf{60 FPS} ($dt = 1/60s$).
+          \item Bản đồ mê cung tĩnh sinh ngẫu nhiên ở mỗi episode bằng thuật toán \textit{Recursive Backtracker}.
+          \item Tích hợp cổng dịch chuyển không gian (portals) và đạn nảy tường.
+        \end{itemize}
+      \end{block}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{alertblock}{\faExclamationCircle~Đặc trưng bài toán điều khiển}
+        \begin{itemize}
+          \item Môi trường mang tính ngẫu nhiên rất cao (bản đồ, vị trí spawn, items đổi liên tục).
+          \item Tác nhân sử dụng không gian quan sát cục bộ giúp khái quát hóa kỹ năng điều khiển trên mọi địa hình.
+        \end{itemize}
+      \end{alertblock}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ============================================================================
+\section{Thiết kế Hệ thống Học Tăng Cường}
+% ============================================================================
+
+% --- Slide 6: Kiến trúc tổng thể ---
+\begin{frame}{Kiến trúc tổng thể}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \begin{block}{\faProjectDiagram~Logic -- Renderer Decoupling}
+        \small
+        Tách biệt hoàn toàn tính toán vật lý game khỏi luồng đồ họa hiển thị (Raylib):
+        \begin{itemize}
+          \item Cho phép chạy chế độ \textbf{Headless mode} trên CPU không cần hiển thị đồ họa.
+          \item Tăng tốc độ lấy mẫu khi train AI lên siêu tốc ($>1200$ FPS).
+        \end{itemize}
+      \end{block}
+      \vspace{0.3em}
+      \begin{exampleblock}{\faCodeBranch~Chia sẻ chung Game Engine}
+        Nhánh huấn luyện (Python) và nhánh chơi game thực tế (C++) chia sẻ chung mã nguồn lõi Game Engine.
+      \end{exampleblock}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{center}
+        \begin{tikzpicture}[
+          box/.style={draw=hustred!70, rounded corners=3pt, minimum width=2cm, minimum height=0.6cm, align=center, font=\tiny\bfseries},
+          arr/.style={->, >=stealth, thick, hustred!70},
+          scale=0.85, transform shape
+        ]
+          \node[box, fill=hustyellow!25] (planner) at (0,2) {A*/Theta*\\Planner};
+          \node[box, fill=hustred!10] (gym) at (2.8,2) {Gymnasium\\Wrapper};
+          \node[box, fill=hustred!20] (ppo) at (5.6,2) {PPO\\Agent};
+          \node[box, fill=hustgreen!15] (engine) at (2.8,0.4) {Game Engine\\C++/Box2D};
+          \draw[arr] (planner) -- (gym);
+          \draw[arr] (gym) -- (ppo);
+          \draw[arr] (ppo) |- (engine.east);
+          \draw[arr] (engine) -- (gym);
+          \draw[arr] (engine.west) -| (planner.south);
+        \end{tikzpicture}
+      \end{center}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% --- Slide 7: Không gian Quan sát ---
+\begin{frame}{Không gian Quan sát (52 chiều)}
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \begin{block}{\faTable~Chuẩn hóa dữ liệu về $[-1, 1]$}
+        \scriptsize
+        \renewcommand{\arraystretch}{1.1}
+        \begin{tabular}{l c p{4.4cm}}
+          \toprule
+          \textbf{Nhóm} & \textbf{Dim} & \textbf{Mô tả} \\
+          \midrule
+          Self State & 5 & Hướng xe ($\cos,\sin$), vận tốc góc, tuyến tính \\
+          Enemy Info & 10 & Khoảng cách, hướng, LoS, vận tốc đối thủ \\
+          Bullet Radar & 8 & 2 đạn nguy hiểm nhất (TTC, Miss Dist) \\
+          Wall Radar & 8 & Quét khoảng cách tường 8 hướng \\
+          \rowcolor{hustyellow!20}
+          A* Nav & 3 & Waypoint kề ($x,y$) và khoảng cách A* \\
+          Status & 18 & Đạn, hồi chiêu, khiên, súng, action trước \\
+          \bottomrule
+        \end{tabular}
+      \end{block}
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \begin{exampleblock}{\faSatelliteDish~Cơ cấu cảm biến}
+        \small
+        \begin{itemize}
+          \item \textbf{Radar đạn:} Cảm thụ đạn đang bay đến để né tránh.
+          \item \textbf{Radar tường:} Quét 8 tia tránh đâm tường.
+          \item \textbf{A* Waypoint:} Kim chỉ nam giúp AI thoát mê cung tĩnh để tìm địch.
+        \end{itemize}
+      \end{exampleblock}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% --- Slide 8: Không gian Hành động ---
+\begin{frame}{Không gian Hành động}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \begin{block}{\faKeyboard~MultiDiscrete([3, 3, 2])}
+        AI nhấn đồng thời 3 nhóm phím (18 tổ hợp/frame):
+        \begin{itemize}
+          \item \textbf{Move:} 0=Đứng yên, 1=Tiến, 2=Lùi.
+          \item \textbf{Turn:} 0=Không xoay, 1=Trái, 2=Phải.
+          \item \textbf{Shoot:} 0=Không bắn, 1=Bắn.
+        \end{itemize}
+      \end{block}
+      \vspace{0.3em}
+      \begin{exampleblock}{\faCheckCircle~Ưu điểm}
+        Cho phép AI vừa di chuyển, vừa xoay, vừa bắn cùng lúc -- phản ánh đúng hành vi người chơi thực tế.
+      \end{exampleblock}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{center}
+        \begin{tikzpicture}[scale=0.75]
+          \fill[hustred!80] (-0.5,-0.8) rectangle (0.5,0.8);
+          \fill[hustred!60] (-0.15,0.8) rectangle (0.15,1.5);
+          \draw[->, very thick, hustgreen] (0,0) -- (0,2) node[right]{\tiny Tiến};
+          \draw[->, very thick, hustreddark] (0,0) -- (0,-1.6) node[right]{\tiny Lùi};
+          \draw[->, very thick, hustyellow] (0.6,0) arc[start angle=0, end angle=60, radius=0.6] node[above right]{\tiny Quay};
+          \draw[->, very thick, red] (0.15,1.5) -- (0.15,2.6) node[above]{\tiny Bắn!};
+        \end{tikzpicture}
+      \end{center}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% --- Slide 9: Phần thưởng Sparse ---
+\begin{frame}{Hệ thống Phần thưởng -- Sparse}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \begin{block}{\faAward~Sparse Rewards (Phần thưởng thưa)}
+        Tín hiệu mục tiêu cốt lõi quyết định thắng thua:
+        \begin{itemize}
+          \item \textbf{Tiêu diệt đối thủ:} $+5.0$ điểm.
+          \item \textbf{Bị tiêu diệt:} $-5.0$ điểm.
+        \end{itemize}
+      \end{block}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{alertblock}{\faSkullCrossbones~Hình phạt tự sát}
+        \begin{itemize}
+          \item \textbf{Tự sát (đạn nảy bắn trúng mình):} Phạt cực nặng $-10.0$ điểm.
+          \item \textbf{Ý nghĩa:} Ngăn chặn triệt để hành vi spam đạn vô thức khi chưa biết ngắm.
+        \end{itemize}
+      \end{alertblock}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% --- Slide 10: Phần thưởng Dense ---
+\begin{frame}{Hệ thống Phần thưởng -- Dense}
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \begin{block}{\faRoute~Dẫn hướng và Bám Waypoint}
+        \scriptsize
+        \begin{itemize}
+          \item \textbf{Time Penalty:} $-0.002$/step kích thích kết thúc trận nhanh.
+          \item \textbf{Approaching:} $+0.005 \times SF$ khi khoảng cách A* tới địch giảm.
+          \item \textbf{Waypoint Following:} $+0.008 \times SF$ khi bám sát waypoint A*.
+        \end{itemize}
+      \end{block}
+      \vspace{0.3em}
+      \begin{alertblock}{\faBan~Phạt lối chơi thụ động}
+        \scriptsize
+        \begin{itemize}
+          \item \textbf{Camping:} $-0.01$/step nếu đứng yên quá 60 frames.
+          \item \textbf{Spam:} $-0.03 \times SF$ nếu xả đạn khi không thấy địch.
+        \end{itemize}
+      \end{alertblock}
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \begin{exampleblock}{\faBalanceScale~Hệ số suy giảm $SF$}
+        \small
+        Phần thưởng bổ trợ nhân với $SF$ giảm dần ($1.0 \to 0.03$).
+        \begin{itemize}
+          \item \textbf{Ý nghĩa:} Giúp AI tự lập ở giai đoạn cuối, tập trung thắng/thua thay vì ``hack'' reward nhỏ.
+        \end{itemize}
+      \end{exampleblock}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ============================================================================
+\section{Cơ sở Thuật toán}
+% ============================================================================
+
+% --- Slide 11: Mạng nơ-ron MLP Policy ---
+\begin{frame}{Mạng nơ-ron MLP Policy}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \begin{block}{\faNetworkWired~Cấu trúc mạng nơ-ron}
+        Kiến trúc Multi-Layer Perceptron:
+        \begin{itemize}
+          \item Đầu vào: vector trạng thái 52 chiều.
+          \item \textbf{2 tầng ẩn}, mỗi tầng \textbf{64 nơ-ron}.
+          \item Hàm kích hoạt $\tanh$ tại các tầng ẩn.
+          \item Đầu ra: \textbf{Actor} (chính sách) và \textbf{Critic} ($V(s)$).
+        \end{itemize}
+      \end{block}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{center}
+        \begin{tikzpicture}[
+          layer/.style={draw=hustred!60, rounded corners=2pt, minimum width=1cm, minimum height=0.4cm, align=center, font=\tiny},
+          arr/.style={->, >=stealth, hustred!60},
+          scale=0.85, transform shape
+        ]
+          \node[layer, fill=hustred!10] (input) at (0,0) {Input (52)};
+          \node[layer, fill=hustyellow!25] (h1) at (1.5,0) {Dense 64\\$\tanh$};
+          \node[layer, fill=hustyellow!25] (h2) at (3,0) {Dense 64\\$\tanh$};
+          \node[layer, fill=hustgreen!15] (o1) at (4.6,0.45) {Move (3)};
+          \node[layer, fill=hustgreen!15] (o2) at (4.6,0) {Turn (3)};
+          \node[layer, fill=hustgreen!15] (o3) at (4.6,-0.45) {Shoot (2)};
+          \node[layer, fill=hustblue!12] (v) at (4.6,-1) {$V(s)$};
+          \draw[arr] (input) -- (h1);
+          \draw[arr] (h1) -- (h2);
+          \draw[arr] (h2) -- (o1);
+          \draw[arr] (h2) -- (o2);
+          \draw[arr] (h2) -- (o3);
+          \draw[arr, dashed, hustblue] (h2.south) -- ++(0,-0.5) -| (v.north);
+        \end{tikzpicture}
+      \end{center}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% --- Slide 12: Thuật toán PPO và GAE ---
+\begin{frame}{Thuật toán PPO và GAE}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \begin{block}{\faSuperscript~PPO (Actor-Critic)}
+        Cắt tỉ lệ cập nhật chính sách mới/cũ $r_t(\theta)$:
+        \scriptsize
+        $$L^{CLIP}(\theta) = \hat{\mathbb{E}}_t\left[\min\left(r_t\hat{A}_t, \text{clip}(r_t, 1\pm\epsilon)\hat{A}_t\right)\right]$$
+        \small
+        với $\epsilon = 0.2$.
+        \begin{itemize}
+          \item \textbf{Entropy:} Giảm dần $0.05 \to 0.003$ duy trì khám phá.
+        \end{itemize}
+      \end{block}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{block}{\faCalculator~GAE}
+        Cân bằng variance/bias của $\hat{A}_t$:
+        \scriptsize
+        $$\hat{A}_t^{GAE(\gamma,\lambda)} = \sum_{l=0}^{\infty}(\gamma\lambda)^l \delta_{t+l}^V$$
+        với $\delta_t^V = r_t + \gamma V(s_{t+1}) - V(s_t)$.
+        \small
+        Cấu hình: $\gamma = 0.99$, $\lambda = 0.95$.
+      \end{block}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% --- Slide 13: Mô hình hóa không gian đồ thị ---
+\begin{frame}{Mô hình hóa không gian đồ thị}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \begin{block}{\faBorderAll~Grid Discretization}
+        Mê cung Box2D $\to$ Occupancy Grid Map:
+        \begin{itemize}
+          \item Lưới: \textbf{$96 \times 72$} ô.
+          \item Kích thước ô $\approx 10.6$ px, đủ mô tả hành lang hẹp.
+        \end{itemize}
+      \end{block}
+      \vspace{0.3em}
+      \begin{block}{\faExpandArrowsAlt~C-Space \& Inflation}
+        Kỹ thuật \textbf{Point Robot}:
+        \begin{itemize}
+          \item Thổi phồng biên vật cản: $R_{\text{inflation}} = 0.55$ m.
+          \item Đảm bảo xe tăng không chạm tường khi bám waypoint.
+        \end{itemize}
+      \end{block}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{center}
+        \begin{tikzpicture}[scale=0.4]
+          \fill[hustlightgray] (0,0) rectangle (10,8);
+          \draw[hustgray!30, very thin, step=1] (0,0) grid (10,8);
+          \fill[hustblack!70] (0,0) rectangle (1,3);
+          \fill[hustblack!70] (2,2) rectangle (3,5);
+          \fill[hustblack!70] (4,0) rectangle (5,2);
+          \fill[hustblack!70] (4,4) rectangle (5,8);
+          \fill[hustblack!70] (6,1) rectangle (7,4);
+          \fill[hustblack!70] (8,3) rectangle (9,6);
+          \draw[hustred, very thick, ->] (1.5,1) -- (1.5,2) -- (3.5,2) -- (3.5,3.5) -- (5.5,3.5) -- (5.5,0.5) -- (7.5,0.5) -- (7.5,2.5) -- (9.5,2.5);
+          \fill[hustgreen] (1.5,1) circle (0.25);
+          \node[font=\tiny\bfseries, text=white] at (1.5,1) {A};
+          \fill[hustred] (9.5,2.5) circle (0.25);
+          \node[font=\tiny\bfseries, text=white] at (9.5,2.5) {B};
+        \end{tikzpicture}
+      \end{center}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% --- Slide 14: Thuật toán Pathfinding ---
+\begin{frame}{Thuật toán Pathfinding}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \begin{block}{\faMapSigns~Thuật toán A*}
+        $f(n) = g(n) + h(n)$ trên lưới 8-hướng.
+        \begin{itemize}
+          \item Heuristic Euclidean đảm bảo tối ưu toàn cục.
+          \item \textbf{Hạn chế:} Đường zig-zag $45^\circ$ gây tổn thất vận tốc xoay.
+        \end{itemize}
+      \end{block}
+      \vspace{0.3em}
+      \begin{exampleblock}{\faAngleDoubleRight~Theta* (Any-Angle)}
+        Kiểm tra \textbf{Line-of-Sight} từ nút cha:
+        \begin{itemize}
+          \item Nối chéo trực tiếp bỏ qua nút trung gian.
+          \item Rút ngắn đường đi, bảo toàn động năng xe tăng.
+        \end{itemize}
+      \end{exampleblock}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{center}
+        \begin{tikzpicture}[scale=0.42]
+          \fill[hustlightgray] (0,0) rectangle (8,8);
+          \draw[hustgray!25, very thin, step=1] (0,0) grid (8,8);
+          \fill[hustblack!60] (3,2) rectangle (5,6);
+          \draw[hustred, thick, dashed] (1,1) -- (2,1) -- (3,1) -- (5,1) -- (5,2) -- (6,3) -- (7,5) -- (7,7);
+          \draw[hustgreen, very thick] (1,1) -- (2.8,1) -- (5.2,1) -- (7,7);
+          \node[font=\tiny\bfseries, text=hustred] at (1, 7.5) {A*};
+          \node[font=\tiny\bfseries, text=hustgreen] at (6, 7.5) {Theta*};
+          \fill[hustblue] (1,1) circle (0.2);
+          \fill[hustyellow] (7,7) circle (0.2);
+        \end{tikzpicture}
+      \end{center}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ============================================================================
+\section{Chiến lược Huấn luyện}
+% ============================================================================
+
+% --- Slide 15: Đối thủ Rule-based ---
+\begin{frame}{Đối thủ Rule-based (Bot C++)}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \begin{block}{\faRobot~Cơ chế đa luồng}
+        C++ đa luồng (2 thread Movement \& Shooting):
+        \begin{itemize}
+          \item 5 Whiskers đo vật cản + 72 tia laser 360°.
+          \item \textbf{Pure Pursuit} bám waypoint A* + \textbf{Corridor Center-Seeking}.
+        \end{itemize}
+      \end{block}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{block}{\faCrosshairs~Bắn phản xạ \& Tránh né}
+        \begin{itemize}
+          \item \textbf{Tránh né:} Quét đạn, tăng tốc né vuông góc.
+          \item \textbf{FindBounce:} 180 tia bắn thử, phản xạ nảy 4 lần, lọc góc tự sát.
+          \item \textbf{7 cấp độ khó} làm bia huấn luyện AI.
+        \end{itemize}
+      \end{block}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% --- Slide 16: Lộ trình Curriculum Learning ---
+\begin{frame}{Lộ trình Curriculum Learning}
+  \begin{columns}[T]
+    \begin{column}{0.55\textwidth}
+      \begin{block}{\faGraduationCap~11 giai đoạn huấn luyện}
+        \centering
+        \scriptsize
+        \renewcommand{\arraystretch}{1.0}
+        \begin{adjustbox}{max width=\textwidth}
+        \begin{tabular}{c c c c r c l}
+          \toprule
+          \textbf{Ph.} & \textbf{Maze} & \textbf{Item} & \textbf{Đối thủ} & \textbf{Steps} & \textbf{SF} & \textbf{Mục tiêu} \\
+          \midrule
+          1 & $\times$ & $\times$ & L1 & 500K & 1.0 & Lái + bắn tĩnh \\
+          2 & $\times$ & $\times$ & L2 & 500K & 1.0 & Bám đuổi \\
+          3 & $\times$ & $\times$ & L3 & 800K & 1.0 & Né đạn \\
+          4 & $\times$ & $\times$ & L4 & 1.0M & 1.0 & Combat \\
+          \rowcolor{hustyellow!20}
+          5 & \checkmark & $\times$ & L4 & 1.5M & 0.9 & Bám A* maze \\
+          6 & \checkmark & $\times$ & L5 & 2.0M & 0.7 & Đạn nảy 1 \\
+          7 & \checkmark & $\times$ & L6 & 3.0M & 0.5 & Đạn nảy 2 \\
+          8 & \checkmark & $\times$ & L6 & 3.0M & 0.3 & Củng cố \\
+          9 & \checkmark & \checkmark & L5-6 & 3.0M & 0.15 & Items + portals \\
+          10 & \checkmark & \checkmark & L4-6 & 10.0M & 0.05 & Marathon \\
+          11 & \checkmark & \checkmark & L7 & 5.0M & 0.03 & Boss L7 \\
+          \bottomrule
+        \end{tabular}
+        \end{adjustbox}
+      \end{block}
+    \end{column}
+    \begin{column}{0.41\textwidth}
+      \begin{exampleblock}{\faLayerGroup~Phân tích}
+        \small
+        \begin{itemize}
+          \item \textbf{Phase 1--4:} Sinh tồn cơ bản, bãi trống.
+          \item \textbf{Phase 5--9:} Mê cung, đạn nảy, vật phẩm.
+          \item \textbf{Phase 10--11:} Marathon + Boss L7.
+        \end{itemize}
+      \end{exampleblock}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% --- Slide 17: Cơ chế Self-Play ---
+\begin{frame}{Cơ chế Self-Play}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \begin{block}{\faSync~Đối đầu với chính mình}
+        Từ giai đoạn 9, kích hoạt Self-Play:
+        \begin{itemize}
+          \item AI đấu chống checkpoint lịch sử $\to$ khái quát hóa.
+          \item Tránh overfitting với Bot cố định.
+          \item Ngăn \textbf{Catastrophic Forgetting}.
+        \end{itemize}
+      \end{block}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{block}{\faDatabase~Opponent Pool}
+        \begin{itemize}
+          \item Quét tự động thư mục checkpoint.
+          \item Mỗi episode: nạp ngẫu nhiên đối thủ từ Pool.
+          \item Mỗi \textbf{100K steps}: thêm checkpoint mới vào Pool.
+        \end{itemize}
+      \end{block}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% --- Slide 18: Triển khai C++ Inference ---
+\begin{frame}{Triển khai C++ Inference}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \begin{block}{\faFileExport~Quy trình xuất mô hình}
+        \small
+        \begin{enumerate}
+          \item Trích xuất trọng số/bias từ model \texttt{.zip}.
+          \item Lưu nhị phân \texttt{.bin} (format \texttt{AZAI}).
+          \item \texttt{AIBot} C++ đọc \texttt{.bin} $\to$ nhân ma trận $\to$ action.
+        \end{enumerate}
+      \end{block}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{exampleblock}{\faBolt~Hiệu năng tối đa}
+        \small
+        \begin{itemize}
+          \item \textbf{Zero Dependency:} Không cần Python/ONNX.
+          \item Dung lượng: \textbf{$\sim 32$ KB}.
+          \item Forward pass: \textbf{$<0.1$ ms}.
+        \end{itemize}
+      \end{exampleblock}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ============================================================================
+\section{Kết quả Thực nghiệm \& Định hướng}
+% ============================================================================
+
+% --- Slide 19: Hành vi chiến thuật ---
+\begin{frame}{Các hành vi chiến thuật nổi bật}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \begin{block}{\faCompass~Điều hướng \& Né tránh}
+        \begin{itemize}
+          \item Điều hướng mê cung mượt mà, bám sát waypoint A*.
+          \item \textbf{Né đạn phản xạ:} Xoay ngang thân giảm diện tích tiếp xúc.
+        \end{itemize}
+      \end{block}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{block}{\faCrosshairs~Chiến đấu \& Vật phẩm}
+        \begin{itemize}
+          \item Tranh đoạt vật phẩm, kích hoạt khiên đúng lúc.
+          \item Bắn đón đầu (Lead-target).
+          \item Bắn nảy tường gián tiếp hạ đối thủ sau chướng ngại.
+        \end{itemize}
+      \end{block}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% --- Slide 20: Đường cong hội tụ ---
+\begin{frame}{Phân tích đường cong hội tụ}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \centering
+      \begin{tikzpicture}[scale=0.68]
+        \begin{axis}[
+            xlabel={Triệu steps},
+            ylabel={Mean Reward},
+            xmin=0, xmax=35, ymin=-2.5, ymax=4.5,
+            xtick={0,10,20,30},
+            ymajorgrids=true,
+            grid style={dashed,hustgray!30},
+            width=6cm, height=4.2cm, thick,
+            axis lines=left,
+            label style={font=\tiny},
+            tick label style={font=\tiny}
+        ]
+        \addplot[color=hustred, thick] coordinates {
+            (0.5,-1.82)(1,-0.54)(1.8,0.31)(2.8,0.97)(4.3,1.44)(6.3,1.89)(9.3,2.35)(12.3,2.81)(15.3,3.12)(25.3,3.64)(30.3,3.89)
+        };
+        \end{axis}
+      \end{tikzpicture}
+      \\{\tiny\textbf{Mean Episode Reward}}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{block}{\faChartLine~Chỉ số hội tụ}
+        \small
+        \begin{itemize}
+          \item \textbf{Mean Reward:} $-1.82 \to +3.89$ qua 30.3M steps.
+          \item \textbf{Reward Std:} Giảm $76\%$ ($2.41 \to 0.58$).
+          \item \textbf{Episode Length:} Giảm $53\%$ ($3120 \to 1480$ frames).
+        \end{itemize}
+      \end{block}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% --- Slide 21: Tỉ lệ đối đầu ---
+\begin{frame}{Tỉ lệ đối đầu thực tế}
+  \begin{columns}[T]
+    \begin{column}{0.42\textwidth}
+      \begin{block}{\faTrophy~Thống kê (100 trận)}
+        \centering
+        \scriptsize
+        \renewcommand{\arraystretch}{1.1}
+        \begin{tabular}{c c c c}
+          \toprule
+          \textbf{Đối thủ} & \textbf{Thắng} & \textbf{Hòa} & \textbf{Sống} \\
+          \midrule
+          Bot L1 & 100\% & 0\%  & 100\% \\
+          Bot L2 & 98\%  & 2\%  & 100\% \\
+          Bot L3 & 95\%  & 3\%  & 98\%  \\
+          Bot L4 & 88\%  & 6\%  & 94\%  \\
+          Bot L5 & 81\%  & 8\%  & 89\%  \\
+          Bot L6 & 72\%  & 11\% & 83\%  \\
+          Bot L7 & 58\%  & 14\% & 72\%  \\
+          \bottomrule
+        \end{tabular}
+      \end{block}
+    \end{column}
+    \begin{column}{0.54\textwidth}
+      \centering
+      \begin{tikzpicture}[scale=0.72]
+      \begin{axis}[
+          ybar=2pt,
+          ylabel={Tỉ lệ (\%)},
+          xlabel={Bot Level},
+          xtick={1,2,3,4,5,6,7},
+          xticklabels={L1,L2,L3,L4,L5,L6,L7},
+          xmin=0.5, xmax=7.5,
+          nodes near coords,
+          nodes near coords style={font=\tiny},
+          ymin=0, ymax=115,
+          width=7cm, height=4.4cm,
+          bar width=6pt,
+          ymajorgrids=true,
+          grid style={dashed,hustgray!30},
+          legend style={at={(0.98,0.98)}, anchor=north east, font=\tiny},
+          axis x line=bottom, axis y line=left,
+          label style={font=\tiny},
+          tick label style={font=\tiny}
+      ]
+      \addplot[fill=hustred!70, draw=hustred!50!black] coordinates {
+          (1,100)(2,98)(3,95)(4,88)(5,81)(6,72)(7,58)
+      };
+      \addlegendentry{Thắng}
+      \addplot[fill=hustgreen!65, draw=hustgreen!45!black] coordinates {
+          (1,100)(2,100)(3,98)(4,94)(5,89)(6,83)(7,72)
+      };
+      \addlegendentry{Sống sót}
+      \end{axis}
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% --- Slide 22: Benchmark Pathfinding ---
+\begin{frame}{Benchmark Pathfinding}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \begin{block}{\faDatabase~Thống kê (N=300)}
+        \centering
+        \scriptsize
+        \renewcommand{\arraystretch}{1.05}
+        \begin{adjustbox}{max width=\textwidth}
+        \begin{tabular}{l c c c}
+          \toprule
+          \textbf{Thuật toán} & \textbf{CPU (ms)} & \textbf{LEN} & \textbf{Travel (s)} \\
+          \midrule
+          \textbf{A* (Manh.)} & \textbf{148.9} & 768 & 156.7 \\
+          A* (Eucl.) & 192.1 & 765 & 159.2 \\
+          Dijkstra & 378.2 & 765 & 156.3 \\
+          DFS & 197.1 & 18253 & 3934.8 \\
+          JPS & 1249.2 & 765 & 155.9 \\
+          \textbf{Theta*} & 967.6 & 788 & \textbf{141.5} \\
+          \bottomrule
+        \end{tabular}
+        \end{adjustbox}
+      \end{block}
+      \vspace{0.2em}
+      \begin{exampleblock}{\faSearchPlus~Nhận xét}
+        \tiny
+        \begin{itemize}
+          \item \textbf{A* Manhattan}: CPU nhanh nhất.
+          \item \textbf{Theta*}: Travel time tốt nhất (loại bỏ zigzag).
+          \item \textbf{DFS}: Phi thực tế (gấp $23.8\times$).
+        \end{itemize}
+      \end{exampleblock}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \centering
+      \begin{tikzpicture}[scale=0.68]
+      \begin{axis}[
+          ybar,
+          ylabel={CPU Time (ms)},
+          symbolic x coords={BFS,DFS,Dijk,A*M,A*E,JPS,Th*},
+          xtick=data,
+          nodes near coords,
+          nodes near coords style={font=\tiny, /pgf/number format/fixed, /pgf/number format/precision=0},
+          ymin=0, ymax=1450,
+          width=6.4cm, height=4.2cm,
+          bar width=6pt,
+          ymajorgrids=true,
+          grid style={dashed,hustgray!30},
+          axis x line=bottom, axis y line=left,
+          label style={font=\tiny},
+          tick label style={font=\tiny}
+      ]
+      \addplot[fill=hustred!60, draw=hustred!50!black] coordinates {
+          (BFS,224)(DFS,197)(Dijk,378)(A*M,149)(A*E,192)(JPS,1249)(Th*,968)
+      };
+      \end{axis}
+      \end{tikzpicture}
+      \\{\tiny\textbf{So sánh CPU Time (ms)}}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% --- Slide 23: Kết luận ---
+\begin{frame}{Kết luận}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \begin{block}{\faCheckCircle~Thành công cốt lõi}
+        \begin{itemize}
+          \item \textbf{Curriculum Learning} + \textbf{Self-Play} là chìa khóa giải bài toán mê cung sparse reward.
+          \item Bộ hoạch định A* thu hẹp không gian khám phá.
+        \end{itemize}
+      \end{block}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{exampleblock}{\faCogs~Triển khai \& Hiệu suất}
+        \begin{itemize}
+          \item \textbf{Logic-Renderer Decoupling} $\to$ Headless vượt trội.
+          \item Model nhị phân C++ \texttt{.bin} zero-dependency, sẵn sàng release.
+        \end{itemize}
+      \end{exampleblock}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% --- Slide 24: Hướng phát triển ---
+\begin{frame}{Hướng phát triển tương lai}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \begin{block}{\faRocket~Đề xuất cải tiến}
+        \begin{itemize}
+          \item \textbf{CNN + Frame Stacking}: Trích xuất đặc trưng không gian thay cảm biến thủ công.
+          \item \textbf{LSTM/GRU}: Trí nhớ ngắn hạn xử lý đạn nảy ẩn khuất.
+          \item \textbf{Multi-Agent RL} (2v2) và môi trường \textbf{3D}.
+        \end{itemize}
+      \end{block}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{block}{\faBook~Tài liệu tham khảo}
+        \tiny
+        \begin{thebibliography}{9}
+          \bibitem{ppo} J. Schulman, et al. \textit{Proximal Policy Optimization}. arXiv:1707.06347, 2017.
+          \bibitem{gae} J. Schulman, et al. \textit{GAE}. arXiv:1506.02438, 2015.
+          \bibitem{sb3} Stable-Baselines3. \url{https://github.com/DLR-RM/stable-baselines3}
+          \bibitem{box2d} Box2D. \url{https://box2d.org/}
+        \end{thebibliography}
+      \end{block}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% --- Slide cuối: Cảm ơn ---
+\begin{frame}[plain, noframenumbering]
+  \begin{tikzpicture}[remember picture, overlay]
+    % Header
+    \fill[hustred] (current page.north west) rectangle ([yshift=-1.8cm]current page.north east);
+    \fill[hustyellow] ([yshift=-1.8cm]current page.north west) rectangle ([yshift=-2cm]current page.north east);
+    \node[text=hustwhite, font=\bfseries] at ([yshift=-0.6cm]current page.north) {ĐẠI HỌC BÁCH KHOA HÀ NỘI};
+    \node[text=hustyellowlight, font=\fontsize{7pt}{9pt}\selectfont] at ([yshift=-1.15cm]current page.north) {HANOI UNIVERSITY OF SCIENCE AND TECHNOLOGY};
+    % Footer
+    \fill[hustred] (current page.south west) rectangle ([yshift=0.8cm]current page.south east);
+    \fill[hustyellow] ([yshift=0.8cm]current page.south west) rectangle ([yshift=0.95cm]current page.south east);
+    \node[text=hustwhite, font=\fontsize{6pt}{7pt}\selectfont] at ([yshift=0.3cm]current page.south) {IT3160 -- Giới thiệu Trí tuệ nhân tạo $\bullet$ Học kỳ 2025--2026};
+  \end{tikzpicture}
+
+  \vspace{1.5cm}
+  \begin{center}
+    {\color{hustred}\Huge\bfseries Cảm ơn quý thầy cô!}
+
+    \vspace{0.3cm}
+    {\color{hustgray}\large Xin mời đặt câu hỏi}
+
+    \vspace{0.4cm}
+    {\color{hustyellow}\rule{0.5\paperwidth}{1.2pt}}
+
+    \vspace{0.4cm}
+    {\color{hustgray}\small
+    \faEnvelope~duong.pdd202416466@sis.hust.edu.vn \quad$\bullet$\quad
+    \faEnvelope~hung.ct202416502@sis.hust.edu.vn}
+  \end{center}
+\end{frame}
+
+\end{document}
